@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Donolauto – Preventivi & Contratti</title>
+<style>
+  :root {
+    --blu: #1a3a5c;
+    --blu-chiaro: #2563a8;
+    --rosso: #c0392b;
+    --grigio-bg: #f4f6f9;
+    --grigio-card: #ffffff;
+    --grigio-bordo: #dde2ea;
+    --testo: #1e2532;
+    --testo-sec: #5a6378;
+    --verde: #1a7a4a;
+    --verde-chiaro: #e8f5ee;
+    --arancio: #e67e22;
+    --arancio-chiaro: #fef5e7;
+    --radius: 10px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--grigio-bg); color: var(--testo); font-size: 14px; }
+
+  /* LOGIN */
+  #login-screen {
+    position: fixed; inset: 0; background: var(--blu);
+    display: flex; align-items: center; justify-content: center; z-index: 1000;
+  }
+  .login-box {
+    background: white; border-radius: 16px; padding: 40px 48px;
+    text-align: center; width: 340px; box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+  }
+  .login-box img { height: 48px; margin-bottom: 20px; }
+  .login-box h2 { font-size: 18px; color: var(--blu); margin-bottom: 8px; }
+  .login-box p { color: var(--testo-sec); font-size: 13px; margin-bottom: 24px; }
+  .login-box input {
+    width: 100%; padding: 12px 16px; border: 1.5px solid var(--grigio-bordo);
+    border-radius: 8px; font-size: 16px; letter-spacing: 4px; text-align: center;
+    margin-bottom: 16px; outline: none;
+  }
+  .login-box input:focus { border-color: var(--blu-chiaro); }
+  .login-box button {
+    width: 100%; padding: 12px; background: var(--blu); color: white;
+    border: none; border-radius: 8px; font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: background .2s;
+  }
+  .login-box button:hover { background: var(--blu-chiaro); }
+  #login-error { color: var(--rosso); font-size: 13px; margin-top: 10px; display: none; }
+
+  /* HEADER */
+  header {
+    background: var(--blu); color: white; padding: 0 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 58px; position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .header-brand { display: flex; align-items: center; gap: 12px; }
+  .header-brand span { font-size: 17px; font-weight: 700; letter-spacing: .3px; }
+  .header-brand small { font-size: 11px; opacity: .7; display: block; margin-top: 1px; }
+  .header-actions { display: flex; gap: 10px; }
+  .btn-header {
+    padding: 7px 16px; border-radius: 7px; font-size: 13px; font-weight: 600;
+    border: 1.5px solid rgba(255,255,255,0.3); color: white; cursor: pointer;
+    background: transparent; transition: all .2s;
+  }
+  .btn-header:hover { background: rgba(255,255,255,0.15); }
+  .btn-header.active { background: white; color: var(--blu); border-color: white; }
+
+  /* MAIN LAYOUT */
+  main { max-width: 1100px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  /* TIPO DOCUMENTO TOGGLE */
+  .tipo-toggle {
+    display: flex; gap: 0; border-radius: var(--radius); overflow: hidden;
+    border: 2px solid var(--grigio-bordo); width: fit-content; margin-bottom: 24px;
+    background: white;
+  }
+  .tipo-btn {
+    padding: 11px 32px; font-size: 14px; font-weight: 600; cursor: pointer;
+    border: none; background: transparent; color: var(--testo-sec);
+    transition: all .2s; display: flex; align-items: center; gap: 8px;
+  }
+  .tipo-btn.active-prev { background: var(--arancio); color: white; }
+  .tipo-btn.active-contr { background: var(--blu); color: white; }
+  .tipo-badge {
+    font-size: 10px; padding: 2px 7px; border-radius: 10px;
+    background: rgba(255,255,255,0.25); font-weight: 700;
+  }
+
+  /* SEZIONE */
+  .sezione {
+    background: var(--grigio-card); border-radius: var(--radius);
+    border: 1.5px solid var(--grigio-bordo); margin-bottom: 18px;
+    box-shadow: var(--shadow); overflow: hidden;
+  }
+  .sezione-header {
+    padding: 14px 20px; display: flex; align-items: center; gap: 10px;
+    border-bottom: 1.5px solid var(--grigio-bordo);
+    cursor: pointer; user-select: none;
+  }
+  .sezione-header .icona {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; flex-shrink: 0;
+  }
+  .sezione-header h3 { font-size: 14px; font-weight: 700; color: var(--testo); }
+  .sezione-header small { font-size: 12px; color: var(--testo-sec); margin-left: auto; }
+  .sezione-header .chevron { margin-left: auto; font-size: 12px; color: var(--testo-sec); transition: transform .2s; }
+  .sezione-body { padding: 20px; }
+  .sezione.collapsed .sezione-body { display: none; }
+  .sezione.collapsed .chevron { transform: rotate(-90deg); }
+
+  /* GRID FORM */
+  .grid { display: grid; gap: 14px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  @media (max-width: 700px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  }
+  .span-2 { grid-column: span 2; }
+  .span-3 { grid-column: span 3; }
+  .span-4 { grid-column: span 4; }
+
+  /* CAMPO */
+  .campo label {
+    display: block; font-size: 12px; font-weight: 600;
+    color: var(--testo-sec); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .4px;
+  }
+  .campo input, .campo select, .campo textarea {
+    width: 100%; padding: 9px 12px; border: 1.5px solid var(--grigio-bordo);
+    border-radius: 7px; font-size: 14px; color: var(--testo);
+    background: white; outline: none; transition: border-color .2s;
+    font-family: inherit;
+  }
+  .campo input:focus, .campo select:focus, .campo textarea:focus {
+    border-color: var(--blu-chiaro); box-shadow: 0 0 0 3px rgba(37,99,168,0.1);
+  }
+  .campo textarea { resize: vertical; min-height: 72px; }
+  .campo input.filled { background: #f0f7ff; border-color: #93c5fd; }
+  .campo-note { font-size: 11px; color: var(--testo-sec); margin-top: 4px; }
+
+  /* VEICOLO LOOKUP */
+  .lookup-bar { display: flex; gap: 10px; margin-bottom: 16px; }
+  .lookup-bar input {
+    flex: 1; padding: 10px 14px; border: 2px solid var(--grigio-bordo);
+    border-radius: 8px; font-size: 15px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 2px; outline: none; font-family: inherit;
+  }
+  .lookup-bar input:focus { border-color: var(--blu-chiaro); }
+  .btn-cerca {
+    padding: 10px 22px; background: var(--blu); color: white; border: none;
+    border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: background .2s; white-space: nowrap;
+  }
+  .btn-cerca:hover { background: var(--blu-chiaro); }
+  .veicolo-trovato {
+    background: var(--verde-chiaro); border: 1.5px solid #6fcf97;
+    border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;
+    font-size: 13px; color: var(--verde); display: none;
+  }
+  .veicolo-trovato strong { font-size: 15px; display: block; margin-bottom: 4px; }
+
+  /* TIPO VEICOLO PILLS */
+  .pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pill {
+    padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    border: 1.5px solid var(--grigio-bordo); cursor: pointer;
+    transition: all .15s; color: var(--testo-sec); background: white;
+  }
+  .pill.active { background: var(--blu); color: white; border-color: var(--blu); }
+
+  /* PERMUTA TOGGLE */
+  .toggle-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+  }
+  .toggle-switch {
+    position: relative; width: 42px; height: 24px; flex-shrink: 0;
+  }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; inset: 0; background: var(--grigio-bordo);
+    border-radius: 24px; cursor: pointer; transition: background .2s;
+  }
+  .toggle-slider:before {
+    content: ''; position: absolute; height: 18px; width: 18px;
+    left: 3px; top: 3px; background: white; border-radius: 50%;
+    transition: transform .2s;
+  }
+  input:checked + .toggle-slider { background: var(--blu); }
+  input:checked + .toggle-slider:before { transform: translateX(18px); }
+  .toggle-label { font-size: 14px; font-weight: 600; color: var(--testo); }
+
+  /* GARANZIA CARDS */
+  .garanzia-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+  .garanzia-card {
+    border: 2px solid var(--grigio-bordo); border-radius: 9px; padding: 14px;
+    cursor: pointer; transition: all .15s; background: white;
+    text-align: center;
+  }
+  .garanzia-card:hover { border-color: var(--blu-chiaro); }
+  .garanzia-card.selected { border-color: var(--blu); background: #eff6ff; }
+  .garanzia-card .nome { font-size: 13px; font-weight: 700; color: var(--testo); margin-bottom: 4px; }
+  .garanzia-card .durata { font-size: 11px; color: var(--testo-sec); margin-bottom: 8px; }
+  .garanzia-card .prezzo { font-size: 17px; font-weight: 700; color: var(--blu); }
+  .garanzia-card .prezzo-note { font-size: 10px; color: var(--testo-sec); }
+
+  /* RIEPILOGO ECONOMICO */
+  .riepilogo-box {
+    background: var(--grigio-bg); border-radius: 9px; padding: 18px;
+    border: 1.5px solid var(--grigio-bordo);
+  }
+  .riepilogo-riga {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0; font-size: 14px;
+  }
+  .riepilogo-riga.totale {
+    border-top: 2px solid var(--grigio-bordo); margin-top: 8px;
+    padding-top: 12px; font-size: 17px; font-weight: 700; color: var(--blu);
+  }
+  .riepilogo-riga .label { color: var(--testo-sec); }
+  .riepilogo-riga .valore { font-weight: 600; }
+  .neg { color: var(--rosso); }
+
+  /* PULSANTI AZIONE */
+  .azioni-bar {
+    position: sticky; bottom: 0; background: white;
+    border-top: 2px solid var(--grigio-bordo); padding: 16px 20px;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+  }
+  .azioni-bar .info { font-size: 13px; color: var(--testo-sec); }
+  .azioni-bar .btns { display: flex; gap: 10px; }
+  .btn {
+    padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 600;
+    cursor: pointer; border: none; transition: all .2s; display: flex; align-items: center; gap: 7px;
+  }
+  .btn-primario { background: var(--blu); color: white; }
+  .btn-primario:hover { background: var(--blu-chiaro); }
+  .btn-secondario { background: var(--grigio-bg); color: var(--testo); border: 1.5px solid var(--grigio-bordo); }
+  .btn-secondario:hover { background: var(--grigio-bordo); }
+  .btn-verde { background: var(--verde); color: white; }
+  .btn-verde:hover { background: #156038; }
+  .btn-rosso { background: var(--rosso); color: white; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* REGISTRO */
+  #sezione-registro { display: none; }
+  .tabella-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--blu); color: white; padding: 10px 12px; text-align: left; font-weight: 600; white-space: nowrap; }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--grigio-bordo); vertical-align: middle; }
+  tr:hover td { background: #f8f9fc; }
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 12px;
+    font-size: 11px; font-weight: 700;
+  }
+  .badge-prev { background: var(--arancio-chiaro); color: var(--arancio); }
+  .badge-contr { background: #e8f0fe; color: var(--blu); }
+  .badge-ok { background: var(--verde-chiaro); color: var(--verde); }
+  .link-pdf { color: var(--blu-chiaro); text-decoration: underline; cursor: pointer; font-size: 12px; }
+
+  /* STATO */
+  #stato-operazione {
+    position: fixed; top: 80px; right: 24px; z-index: 500;
+    background: white; border-radius: 10px; padding: 14px 20px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15); font-size: 14px;
+    border-left: 4px solid var(--blu); min-width: 260px;
+    display: none; transition: all .3s;
+  }
+  #stato-operazione.errore { border-color: var(--rosso); }
+  #stato-operazione.successo { border-color: var(--verde); }
+
+  .divider { border: none; border-top: 1.5px solid var(--grigio-bordo); margin: 16px 0; }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--testo-sec); }
+  .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+
+  /* NUMERO CONTRATTO */
+  .num-contratto {
+    background: var(--grigio-bg); border-radius: 8px; padding: 10px 14px;
+    font-size: 20px; font-weight: 700; color: var(--blu); letter-spacing: 1px;
+    display: inline-block; border: 1.5px solid var(--grigio-bordo);
+  }
+</style>
+</head>
+<body>
+
+<!-- SCHERMATA LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div style="font-size:32px;font-weight:900;color:var(--blu);letter-spacing:-1px;margin-bottom:20px;">
+      <span style="color:#c0392b;">dono</span>lauto
+    </div>
+    <h2>Accesso riservato</h2>
+    <p>Inserisci il PIN per accedere al gestionale preventivi e contratti</p>
+    <input type="password" id="pin-input" placeholder="• • • • " maxlength="6"
+      onkeydown="if(event.key==='Enter')verificaPin()">
+    <button onclick="verificaPin()">Entra</button>
+    <div id="login-error">PIN errato. Riprova.</div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-brand">
+    <div style="font-size:20px;font-weight:900;letter-spacing:-0.5px;">
+      <span style="color:#ef9f9f;">dono</span>lauto
+    </div>
+    <div>
+      <span>Preventivi & Contratti</span>
+      <small>Donolauto SRL – Via Romea 121, Legnaro (PD)</small>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn-header active" id="tab-nuovo" onclick="mostraTab('nuovo')">✏️ Nuovo documento</button>
+    <button class="btn-header" id="tab-registro" onclick="mostraTab('registro')">📋 Registro vendite</button>
+  </div>
+</header>
+
+<!-- STATO OPERAZIONE -->
+<div id="stato-operazione"></div>
+
+<!-- MAIN -->
+<main>
+
+  <!-- NUOVO DOCUMENTO -->
+  <div id="sezione-nuovo">
+
+    <!-- TIPO DOCUMENTO -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h2 style="font-size:18px;font-weight:700;color:var(--testo);">Nuovo documento</h2>
+        <p style="font-size:13px;color:var(--testo-sec);margin-top:3px;">Compila i campi e genera il PDF</p>
+      </div>
+      <div class="tipo-toggle">
+        <button class="tipo-btn active-prev" id="btn-preventivo" onclick="setTipo('preventivo')">
+          📄 Preventivo <span class="tipo-badge">1 pag.</span>
+        </button>
+        <button class="tipo-btn" id="btn-contratto" onclick="setTipo('contratto')">
+          📑 Contratto <span class="tipo-badge">4 pag.</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- NUMERO DOC -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--testo-sec);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Numero documento</div>
+        <div class="num-contratto" id="num-doc">DNL-2026-001</div>
+      </div>
+      <div class="campo" style="flex:1;max-width:200px;">
+        <label>Data</label>
+        <input type="date" id="data-doc">
+      </div>
+      <div class="campo" style="flex:1;max-width:200px;">
+        <label>Venditore</label>
+        <input type="text" id="venditore" placeholder="Nome venditore">
+      </div>
+    </div>
+
+    <!-- SEZIONE CLIENTE -->
+    <div class="sezione" id="sez-cliente">
+      <div class="sezione-header" onclick="toggleSezione('sez-cliente')">
+        <div class="icona" style="background:#e8f0fe;">👤</div>
+        <h3>Dati cliente</h3>
+        <small id="riepilogo-cliente" style="color:var(--testo-sec);">da compilare</small>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="sezione-body">
+        <div class="grid grid-2">
+          <div class="campo">
+            <label>Cognome e nome *</label>
+            <input type="text" id="cliente-nome" placeholder="es. Rossi Mario" oninput="aggiornaRiepilogoCliente()">
+          </div>
+          <div class="campo">
+            <label>Nato/a il</label>
+            <input type="date" id="cliente-nascita">
+          </div>
+          <div class="campo">
+            <label>Nato/a a</label>
+            <input type="text" id="cliente-nato-a" placeholder="Città di nascita">
+          </div>
+          <div class="campo">
+            <label>Provincia nascita</label>
+            <input type="text" id="cliente-nato-prov" placeholder="PD" maxlength="3">
+          </div>
+          <div class="campo">
+            <label>Telefono</label>
+            <input type="tel" id="cliente-tel" placeholder="049 000000">
+          </div>
+          <div class="campo">
+            <label>Cellulare</label>
+            <input type="tel" id="cliente-cell" placeholder="338 0000000">
+          </div>
+          <div class="campo span-2">
+            <label>Email</label>
+            <input type="email" id="cliente-email" placeholder="mario.rossi@email.it">
+          </div>
+          <div class="campo span-2">
+            <label>Residente a</label>
+            <input type="text" id="cliente-residenza" placeholder="Città di residenza">
+          </div>
+          <div class="campo">
+            <label>Provincia</label>
+            <input type="text" id="cliente-res-prov" placeholder="PD" maxlength="3">
+          </div>
+          <div class="campo span-2" style="grid-column:span 1;">
+            <label>Via / Indirizzo</label>
+            <input type="text" id="cliente-via" placeholder="Via Roma 1">
+          </div>
+          <div class="campo">
+            <label>CAP</label>
+            <input type="text" id="cliente-cap" placeholder="35020" maxlength="5">
+          </div>
+          <div class="campo span-2">
+            <label>Codice fiscale</label>
+            <input type="text" id="cliente-cf" placeholder="RSSMRA80A01G224Z" maxlength="16" style="text-transform:uppercase;">
+          </div>
+          <div class="campo">
+            <label>P. IVA (se azienda)</label>
+            <input type="text" id="cliente-piva" placeholder="IT00000000000">
+          </div>
+          <div class="campo">
+            <label>Codice univoco (CU)</label>
+            <input type="text" id="cliente-cu" placeholder="SDI o PEC">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEZIONE VEICOLO -->
+    <div class="sezione" id="sez-veicolo">
+      <div class="sezione-header" onclick="toggleSezione('sez-veicolo')">
+        <div class="icona" style="background:#fff3e0;">🚗</div>
+        <h3>Veicolo in vendita</h3>
+        <small id="riepilogo-veicolo" style="color:var(--testo-sec);">da compilare</small>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="sezione-body">
+        <!-- LOOKUP TARGA -->
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;font-weight:700;color:var(--testo-sec);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Cerca da inventario</div>
+          <div class="lookup-bar">
+            <input type="text" id="targa-cerca" placeholder="AA 000 BB" maxlength="10"
+              style="text-transform:uppercase;" onkeydown="if(event.key==='Enter')cercaVeicolo()">
+            <button class="btn-cerca" onclick="cercaVeicolo()">🔍 Cerca targa</button>
+          </div>
+          <div class="veicolo-trovato" id="veicolo-trovato-box">
+            <strong id="vt-nome">–</strong>
+            <span id="vt-dettagli">–</span>
+          </div>
+        </div>
+
+        <!-- TIPO -->
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;font-weight:700;color:var(--testo-sec);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;">Tipo veicolo</div>
+          <div class="pills">
+            <div class="pill active" onclick="setPill(this,'tipo-veicolo')">Usato</div>
+            <div class="pill" onclick="setPill(this,'tipo-veicolo')">KM0</div>
+            <div class="pill" onclick="setPill(this,'tipo-veicolo')">Nuovo</div>
+          </div>
+          <input type="hidden" id="tipo-veicolo" value="Usato">
+        </div>
+
+        <div class="grid grid-2">
+          <div class="campo">
+            <label>Marca *</label>
+            <input type="text" id="v-marca" placeholder="es. Volkswagen" oninput="aggiornaRiepilogoVeicolo()">
+          </div>
+          <div class="campo">
+            <label>Modello e allestimento *</label>
+            <input type="text" id="v-modello" placeholder="es. Golf 1.5 TSI Life" oninput="aggiornaRiepilogoVeicolo()">
+          </div>
+          <div class="campo">
+            <label>Chilometri</label>
+            <input type="number" id="v-km" placeholder="0">
+          </div>
+          <div class="campo">
+            <label>Data immatricolazione</label>
+            <input type="month" id="v-immat">
+          </div>
+          <div class="campo">
+            <label>Colore</label>
+            <input type="text" id="v-colore" placeholder="es. Bianco Perla">
+          </div>
+          <div class="campo">
+            <label>Targa</label>
+            <input type="text" id="v-targa" placeholder="AA 000 BB" style="text-transform:uppercase;">
+          </div>
+          <div class="campo span-2">
+            <label>Numero telaio (VIN)</label>
+            <input type="text" id="v-telaio" placeholder="WVWZZZ1KZ..." style="text-transform:uppercase;">
+          </div>
+          <div class="campo span-2">
+            <label>Note veicolo</label>
+            <input type="text" id="v-note" placeholder="es. Tagliando appena eseguito, cerchi in lega...">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEZIONE PERMUTA -->
+    <div class="sezione" id="sez-permuta">
+      <div class="sezione-header" onclick="toggleSezione('sez-permuta')">
+        <div class="icona" style="background:#f3e8ff;">🔄</div>
+        <h3>Permuta</h3>
+        <small style="color:var(--testo-sec);">opzionale</small>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="sezione-body">
+        <div class="toggle-row">
+          <label class="toggle-switch">
+            <input type="checkbox" id="permuta-toggle" onchange="togglePermuta()">
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-label">Il cliente porta un veicolo in permuta</span>
+        </div>
+        <div id="permuta-campi" style="display:none;">
+          <div class="grid grid-2">
+            <div class="campo">
+              <label>Marca permuta</label>
+              <input type="text" id="p-marca" placeholder="es. Fiat">
+            </div>
+            <div class="campo">
+              <label>Modello e allestimento</label>
+              <input type="text" id="p-modello" placeholder="es. Panda 1.2">
+            </div>
+            <div class="campo">
+              <label>Targa</label>
+              <input type="text" id="p-targa" placeholder="AB 123 CD" style="text-transform:uppercase;">
+            </div>
+            <div class="campo">
+              <label>Telaio</label>
+              <input type="text" id="p-telaio" placeholder="ZFA..." style="text-transform:uppercase;">
+            </div>
+            <div class="campo">
+              <label>Immatricolazione</label>
+              <input type="month" id="p-immat">
+            </div>
+            <div class="campo">
+              <label>Colore</label>
+              <input type="text" id="p-colore">
+            </div>
+            <div class="campo">
+              <label>Chilometri</label>
+              <input type="number" id="p-km" placeholder="0">
+            </div>
+            <div class="campo">
+              <label>Proprietario è il cliente?</label>
+              <select id="p-proprietario">
+                <option value="SI">Sì</option>
+                <option value="NO">No – indicare sotto</option>
+              </select>
+            </div>
+            <div class="campo span-2" id="p-proprietario-altro" style="display:none;">
+              <label>Nominativo proprietario veicolo in permuta</label>
+              <input type="text" id="p-proprietario-nome" placeholder="Cognome e nome">
+            </div>
+            <div class="campo">
+              <label>Valutazione permuta €</label>
+              <input type="number" id="p-valore" placeholder="0" oninput="calcolaRiepilogo()">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEZIONE GARANZIA -->
+    <div class="sezione" id="sez-garanzia">
+      <div class="sezione-header" onclick="toggleSezione('sez-garanzia')">
+        <div class="icona" style="background:#e8f5ee;">🛡️</div>
+        <h3>Garanzia Mapfre Mawdy</h3>
+        <small style="color:var(--testo-sec);">opzionale</small>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="sezione-body">
+        <p style="font-size:13px;color:var(--testo-sec);margin-bottom:16px;">Seleziona il pacchetto garanzia se incluso nella vendita</p>
+        <div class="garanzia-grid" id="garanzia-grid">
+          <div class="garanzia-card" onclick="selezionaGaranzia(this,'Nessuna','–','0')">
+            <div class="nome">Nessuna</div>
+            <div class="durata">–</div>
+            <div class="prezzo" style="color:var(--testo-sec);">€ 0</div>
+            <div class="prezzo-note">non inclusa</div>
+          </div>
+          <div class="garanzia-card selected" onclick="selezionaGaranzia(this,'Nessuna','–','0')" id="garanzia-sel"></div>
+        </div>
+        <!-- Le card garanzia vengono generate da JS -->
+        <div style="margin-top:16px;" class="campo">
+          <label>Note garanzia</label>
+          <input type="text" id="garanzia-note" placeholder="es. Garanzia 12 mesi motore e cambio">
+        </div>
+      </div>
+    </div>
+
+    <!-- SEZIONE CONDIZIONI ECONOMICHE -->
+    <div class="sezione" id="sez-economico">
+      <div class="sezione-header" onclick="toggleSezione('sez-economico')">
+        <div class="icona" style="background:#fef3c7;">💶</div>
+        <h3>Condizioni economiche</h3>
+        <small id="riepilogo-prezzo" style="color:var(--testo-sec);">da compilare</small>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="sezione-body">
+        <div class="grid grid-2">
+          <div class="campo">
+            <label>Prezzo di vendita € *</label>
+            <input type="number" id="prezzo-vendita" placeholder="0" oninput="calcolaRiepilogo()">
+          </div>
+          <div class="campo">
+            <label>Passaggio proprietà / immatricolazione €</label>
+            <input type="number" id="passaggio-prop" placeholder="0" oninput="calcolaRiepilogo()">
+          </div>
+          <div class="campo">
+            <label>Caparra confirmatoria €</label>
+            <input type="number" id="caparra" placeholder="0" oninput="calcolaRiepilogo()">
+          </div>
+          <div class="campo">
+            <label>Importo finanziato €</label>
+            <input type="number" id="imp-finanziato" placeholder="0" oninput="calcolaRiepilogo()">
+          </div>
+        </div>
+
+        <!-- FINANZIAMENTO -->
+        <div class="toggle-row" style="margin-top:14px;">
+          <label class="toggle-switch">
+            <input type="checkbox" id="finanziamento-toggle" onchange="toggleFinanziamento()">
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-label">Include finanziamento</span>
+        </div>
+        <div id="finanziamento-campi" style="display:none;">
+          <div class="grid grid-4" style="margin-top:10px;">
+            <div class="campo">
+              <label>Spese apertura pratica €</label>
+              <input type="number" id="fin-spese" placeholder="0">
+            </div>
+            <div class="campo">
+              <label>N° rate</label>
+              <input type="number" id="fin-rate" placeholder="48">
+            </div>
+            <div class="campo">
+              <label>Importo rata €</label>
+              <input type="number" id="fin-rata" placeholder="0">
+            </div>
+            <div class="campo">
+              <label>TAN %</label>
+              <input type="number" id="fin-tan" placeholder="0.00" step="0.01">
+            </div>
+          </div>
+        </div>
+
+        <div class="campo" style="margin-top:14px;">
+          <label>Tipo pagamento</label>
+          <select id="tipo-pagamento">
+            <option>Contanti</option>
+            <option>Bonifico bancario</option>
+            <option>Rateale / Finanziamento</option>
+            <option>Contanti + Finanziamento</option>
+            <option>Assegno</option>
+          </select>
+        </div>
+
+        <div class="campo" style="margin-top:14px;">
+          <label>Previsione di consegna</label>
+          <input type="date" id="data-consegna">
+        </div>
+
+        <hr class="divider">
+
+        <!-- RIEPILOGO -->
+        <div class="riepilogo-box">
+          <div class="riepilogo-riga">
+            <span class="label">Prezzo vendita</span>
+            <span class="valore" id="r-prezzo">€ –</span>
+          </div>
+          <div class="riepilogo-riga">
+            <span class="label">– Permuta</span>
+            <span class="valore neg" id="r-permuta">€ 0</span>
+          </div>
+          <div class="riepilogo-riga">
+            <span class="label">+ Passaggio proprietà</span>
+            <span class="valore" id="r-passaggio">€ 0</span>
+          </div>
+          <div class="riepilogo-riga">
+            <span class="label">– Caparra versata</span>
+            <span class="valore neg" id="r-caparra">€ 0</span>
+          </div>
+          <div class="riepilogo-riga totale">
+            <span>Saldo finale</span>
+            <span id="r-saldo">€ –</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTE AGGIUNTIVE -->
+    <div class="sezione" id="sez-note">
+      <div class="sezione-header" onclick="toggleSezione('sez-note')">
+        <div class="icona" style="background:#f1f5f9;">📝</div>
+        <h3>Note aggiuntive</h3>
+        <small style="color:var(--testo-sec);">opzionale</small>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="sezione-body">
+        <div class="campo">
+          <label>Note / pattuizioni supplementari / lavori da eseguire</label>
+          <textarea id="note-extra" placeholder="es. Veicolo consegnato con revisione, cerchi invernali inclusi, 2a chiave..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- AZIONI -->
+    <div class="azioni-bar">
+      <div class="info" id="info-tipo-doc">📄 Stai generando un <strong>Preventivo</strong> (1 pagina)</div>
+      <div class="btns">
+        <button class="btn btn-secondario" onclick="resetForm()">🗑️ Cancella tutto</button>
+        <button class="btn btn-primario" onclick="generaDocumento()" id="btn-genera">
+          ⬇️ Genera PDF
+        </button>
+        <button class="btn btn-verde" onclick="salvaEGeneraDocumento()" id="btn-salva-genera">
+          ✅ Salva & Genera PDF
+        </button>
+      </div>
+    </div>
+
+  </div><!-- fine sezione-nuovo -->
+
+  <!-- REGISTRO VENDITE -->
+  <div id="sezione-registro">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h2 style="font-size:18px;font-weight:700;">Registro vendite</h2>
+        <p style="font-size:13px;color:var(--testo-sec);margin-top:3px;">Tutti i documenti generati</p>
+      </div>
+      <button class="btn btn-primario" onclick="caricaRegistro()">🔄 Aggiorna</button>
+    </div>
+    <div class="sezione">
+      <div class="tabella-wrap">
+        <table id="tabella-registro">
+          <thead>
+            <tr>
+              <th>N° Doc.</th>
+              <th>Data</th>
+              <th>Tipo</th>
+              <th>Cliente</th>
+              <th>Veicolo</th>
+              <th>Targa</th>
+              <th>Prezzo €</th>
+              <th>Venditore</th>
+              <th>PDF</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-registro">
+            <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--testo-sec);">Clicca "Aggiorna" per caricare i dati</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ============================================================
+// CONFIGURAZIONE
+// ============================================================
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-bffTfisPWIqHYY3sOn0BAxzF_2nhlAYz-Y_j2L8NnOOCijy9EOb4Vfa7trKnCr3V/exec';
+const PIN_CORRETTO = '1974'; // Cambia questo PIN
+
+// ============================================================
+// LOGIN
+// ============================================================
+function verificaPin() {
+  const pin = document.getElementById('pin-input').value;
+  if (pin === PIN_CORRETTO) {
+    document.getElementById('login-screen').style.display = 'none';
+    init();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('pin-input').value = '';
+    document.getElementById('pin-input').focus();
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  // Data di oggi
+  const oggi = new Date().toISOString().split('T')[0];
+  document.getElementById('data-doc').value = oggi;
+
+  // Numero documento progressivo
+  const ultimo = parseInt(localStorage.getItem('dnl_ultimo_num') || '0');
+  const anno = new Date().getFullYear();
+  const num = (ultimo + 1).toString().padStart(3, '0');
+  document.getElementById('num-doc').textContent = `DNL-${anno}-${num}`;
+
+  // Garanzie Mapfre
+  generaCardsGaranzia();
+}
+
+// ============================================================
+// GARANZIE MAPFRE
+// ============================================================
+const garanzie = [
+  { nome: 'Base 6 mesi', durata: '6 mesi', prezzo: 0 },
+  { nome: 'Base 12 mesi', durata: '12 mesi', prezzo: 0 },
+  { nome: 'Standard 12 mesi', durata: '12 mesi', prezzo: 0 },
+  { nome: 'Standard 24 mesi', durata: '24 mesi', prezzo: 0 },
+  { nome: 'Plus 12 mesi', durata: '12 mesi', prezzo: 0 },
+  { nome: 'Plus 24 mesi', durata: '24 mesi', prezzo: 0 },
+];
+let garanziaSelezionata = { nome: 'Nessuna', durata: '–', prezzo: 0 };
+
+function generaCardsGaranzia() {
+  const grid = document.getElementById('garanzia-grid');
+  grid.innerHTML = `
+    <div class="garanzia-card selected" onclick="selezionaGaranzia(this,'Nessuna','–',0)">
+      <div class="nome">Nessuna</div>
+      <div class="durata">–</div>
+      <div class="prezzo" style="color:var(--testo-sec);">€ 0</div>
+      <div class="prezzo-note">non inclusa</div>
+    </div>` +
+    garanzie.map(g => `
+    <div class="garanzia-card" onclick="selezionaGaranzia(this,'${g.nome}','${g.durata}',${g.prezzo})">
+      <div class="nome">${g.nome}</div>
+      <div class="durata">${g.durata}</div>
+      <div class="prezzo">${g.prezzo > 0 ? '€ '+g.prezzo : '–'}</div>
+      <div class="prezzo-note">${g.prezzo > 0 ? 'premio' : 'inserire prezzo'}</div>
+    </div>`).join('');
+}
+
+function selezionaGaranzia(el, nome, durata, prezzo) {
+  document.querySelectorAll('.garanzia-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  garanziaSelezionata = { nome, durata, prezzo: parseFloat(prezzo)||0 };
+  calcolaRiepilogo();
+}
+
+// ============================================================
+// TIPO DOCUMENTO
+// ============================================================
+let tipoDocumento = 'preventivo';
+
+function setTipo(tipo) {
+  tipoDocumento = tipo;
+  document.getElementById('btn-preventivo').className =
+    'tipo-btn ' + (tipo === 'preventivo' ? 'active-prev' : '');
+  document.getElementById('btn-contratto').className =
+    'tipo-btn ' + (tipo === 'contratto' ? 'active-contr' : '');
+  document.getElementById('info-tipo-doc').innerHTML =
+    tipo === 'preventivo'
+      ? '📄 Stai generando un <strong>Preventivo</strong> (1 pagina)'
+      : '📑 Stai generando un <strong>Contratto di vendita</strong> (4 pagine + condizioni generali)';
+}
+
+// ============================================================
+// UI HELPERS
+// ============================================================
+function toggleSezione(id) {
+  document.getElementById(id).classList.toggle('collapsed');
+}
+function mostraTab(tab) {
+  document.getElementById('sezione-nuovo').style.display = tab === 'nuovo' ? 'block' : 'none';
+  document.getElementById('sezione-registro').style.display = tab === 'registro' ? 'block' : 'none';
+  document.getElementById('tab-nuovo').className = 'btn-header' + (tab === 'nuovo' ? ' active' : '');
+  document.getElementById('tab-registro').className = 'btn-header' + (tab === 'registro' ? ' active' : '');
+  if (tab === 'registro') caricaRegistro();
+}
+function togglePermuta() {
+  const on = document.getElementById('permuta-toggle').checked;
+  document.getElementById('permuta-campi').style.display = on ? 'block' : 'none';
+  if (!on) calcolaRiepilogo();
+}
+function toggleFinanziamento() {
+  const on = document.getElementById('finanziamento-toggle').checked;
+  document.getElementById('finanziamento-campi').style.display = on ? 'grid' : 'none';
+}
+function setPill(el, campo) {
+  el.closest('.pills').querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(campo).value = el.textContent;
+}
+document.getElementById('p-proprietario').addEventListener('change', function() {
+  document.getElementById('p-proprietario-altro').style.display =
+    this.value === 'NO' ? 'block' : 'none';
+});
+function aggiornaRiepilogoCliente() {
+  const n = document.getElementById('cliente-nome').value;
+  document.getElementById('riepilogo-cliente').textContent = n || 'da compilare';
+}
+function aggiornaRiepilogoVeicolo() {
+  const m = document.getElementById('v-marca').value;
+  const mod = document.getElementById('v-modello').value;
+  const txt = [m, mod].filter(Boolean).join(' ') || 'da compilare';
+  document.getElementById('riepilogo-veicolo').textContent = txt;
+}
+
+// ============================================================
+// CALCOLO RIEPILOGO
+// ============================================================
+function calcolaRiepilogo() {
+  const prezzo = parseFloat(document.getElementById('prezzo-vendita').value) || 0;
+  const permuta = document.getElementById('permuta-toggle').checked
+    ? parseFloat(document.getElementById('p-valore').value) || 0 : 0;
+  const passaggio = parseFloat(document.getElementById('passaggio-prop').value) || 0;
+  const caparra = parseFloat(document.getElementById('caparra').value) || 0;
+  const saldo = prezzo - permuta + passaggio - caparra;
+
+  const fmt = v => '€ ' + v.toLocaleString('it-IT', {minimumFractionDigits:0});
+  document.getElementById('r-prezzo').textContent = prezzo ? fmt(prezzo) : '€ –';
+  document.getElementById('r-permuta').textContent = fmt(permuta);
+  document.getElementById('r-passaggio').textContent = fmt(passaggio);
+  document.getElementById('r-caparra').textContent = fmt(caparra);
+  document.getElementById('r-saldo').textContent = prezzo ? fmt(saldo) : '€ –';
+  document.getElementById('riepilogo-prezzo').textContent = prezzo ? fmt(prezzo) : 'da compilare';
+}
+
+// ============================================================
+// CERCA VEICOLO DA INVENTARIO
+// ============================================================
+async function cercaVeicolo() {
+  const targa = document.getElementById('targa-cerca').value.trim().toUpperCase().replace(/\s/g,'');
+  if (!targa) return;
+  mostraStato('Ricerca in corso...', 'normale');
+  try {
+    const res = await fetch(APPS_SCRIPT_URL + '?action=cercaVeicolo&targa=' + targa);
+    const data = await res.json();
+    if (data.trovato) {
+      document.getElementById('v-targa').value = data.targa || targa;
+      document.getElementById('v-marca').value = data.marca || '';
+      document.getElementById('v-modello').value = data.modello || '';
+      document.getElementById('v-km').value = data.km || '';
+      document.getElementById('v-colore').value = data.colore || '';
+      document.getElementById('v-telaio').value = data.telaio || '';
+      if (data.immat) document.getElementById('v-immat').value = data.immat;
+      if (data.prezzo) document.getElementById('prezzo-vendita').value = data.prezzo;
+      document.getElementById('vt-nome').textContent = data.marca + ' ' + data.modello;
+      document.getElementById('vt-dettagli').textContent =
+        [data.km ? data.km + ' km' : '', data.colore, data.targa].filter(Boolean).join(' · ');
+      document.getElementById('veicolo-trovato-box').style.display = 'block';
+      aggiornaRiepilogoVeicolo(); calcolaRiepilogo();
+      mostraStato('✅ Veicolo trovato e caricato', 'successo');
+    } else {
+      mostraStato('⚠️ Targa non trovata in inventario. Compila manualmente.', 'normale');
+      document.getElementById('veicolo-trovato-box').style.display = 'none';
+    }
+  } catch (e) {
+    mostraStato('⚠️ Compila i dati manualmente (backend non configurato)', 'normale');
+    document.getElementById('veicolo-trovato-box').style.display = 'none';
+  }
+}
+
+// ============================================================
+// RACCOLTA DATI FORM
+// ============================================================
+function raccogliDati() {
+  return {
+    tipo: tipoDocumento,
+    numDoc: document.getElementById('num-doc').textContent,
+    dataDoc: document.getElementById('data-doc').value,
+    venditore: document.getElementById('venditore').value,
+    cliente: {
+      nome: document.getElementById('cliente-nome').value,
+      nascita: document.getElementById('cliente-nascita').value,
+      natoA: document.getElementById('cliente-nato-a').value,
+      natoProv: document.getElementById('cliente-nato-prov').value,
+      tel: document.getElementById('cliente-tel').value,
+      cell: document.getElementById('cliente-cell').value,
+      email: document.getElementById('cliente-email').value,
+      residenza: document.getElementById('cliente-residenza').value,
+      resProv: document.getElementById('cliente-res-prov').value,
+      via: document.getElementById('cliente-via').value,
+      cap: document.getElementById('cliente-cap').value,
+      cf: document.getElementById('cliente-cf').value,
+      piva: document.getElementById('cliente-piva').value,
+      cu: document.getElementById('cliente-cu').value,
+    },
+    veicolo: {
+      tipo: document.getElementById('tipo-veicolo').value,
+      marca: document.getElementById('v-marca').value,
+      modello: document.getElementById('v-modello').value,
+      km: document.getElementById('v-km').value,
+      immat: document.getElementById('v-immat').value,
+      colore: document.getElementById('v-colore').value,
+      targa: document.getElementById('v-targa').value,
+      telaio: document.getElementById('v-telaio').value,
+      note: document.getElementById('v-note').value,
+    },
+    permuta: document.getElementById('permuta-toggle').checked ? {
+      marca: document.getElementById('p-marca').value,
+      modello: document.getElementById('p-modello').value,
+      targa: document.getElementById('p-targa').value,
+      telaio: document.getElementById('p-telaio').value,
+      immat: document.getElementById('p-immat').value,
+      colore: document.getElementById('p-colore').value,
+      km: document.getElementById('p-km').value,
+      proprietario: document.getElementById('p-proprietario').value,
+      proprietarioNome: document.getElementById('p-proprietario-nome').value,
+      valore: document.getElementById('p-valore').value,
+    } : null,
+    garanzia: garanziaSelezionata,
+    garanziaNote: document.getElementById('garanzia-note').value,
+    economico: {
+      prezzoVendita: document.getElementById('prezzo-vendita').value,
+      passaggioProp: document.getElementById('passaggio-prop').value,
+      caparra: document.getElementById('caparra').value,
+      impFinanziato: document.getElementById('imp-finanziato').value,
+      tipoPagamento: document.getElementById('tipo-pagamento').value,
+      dataConsegna: document.getElementById('data-consegna').value,
+      finSpese: document.getElementById('fin-spese').value,
+      finRate: document.getElementById('fin-rate').value,
+      finRata: document.getElementById('fin-rata').value,
+      finTan: document.getElementById('fin-tan').value,
+    },
+    noteExtra: document.getElementById('note-extra').value,
+  };
+}
+
+// ============================================================
+// VALIDAZIONE
+// ============================================================
+function validaDati(dati) {
+  if (!dati.cliente.nome) return 'Inserisci cognome e nome del cliente.';
+  if (!dati.veicolo.marca) return 'Inserisci la marca del veicolo.';
+  if (!dati.veicolo.modello) return 'Inserisci il modello del veicolo.';
+  if (!dati.economico.prezzoVendita) return 'Inserisci il prezzo di vendita.';
+  return null;
+}
+
+// ============================================================
+// GENERA DOCUMENTO
+// ============================================================
+async function generaDocumento() {
+  const dati = raccogliDati();
+  const err = validaDati(dati);
+  if (err) { mostraStato('❌ ' + err, 'errore'); return; }
+  mostraStato('⏳ Generazione PDF in corso...', 'normale');
+  document.getElementById('btn-genera').disabled = true;
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'generaPDF', dati })
+    });
+    const result = await res.json();
+    if (result.url) {
+      mostraStato('✅ PDF generato! Apertura...', 'successo');
+      window.open(result.url, '_blank');
+    } else {
+      mostraStato('❌ Errore: ' + (result.errore || 'sconosciuto'), 'errore');
+    }
+  } catch(e) {
+    mostraStato('❌ Errore di connessione al backend', 'errore');
+  }
+  document.getElementById('btn-genera').disabled = false;
+}
+
+async function salvaEGeneraDocumento() {
+  const dati = raccogliDati();
+  const err = validaDati(dati);
+  if (err) { mostraStato('❌ ' + err, 'errore'); return; }
+  mostraStato('⏳ Salvataggio e generazione...', 'normale');
+  document.getElementById('btn-salva-genera').disabled = true;
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'salvaEGeneraPDF', dati })
+    });
+    const result = await res.json();
+    if (result.url) {
+      // Aggiorna numero progressivo
+      const num = parseInt(dati.numDoc.split('-')[2]);
+      localStorage.setItem('dnl_ultimo_num', num);
+      mostraStato('✅ Salvato nel registro e PDF generato!', 'successo');
+      window.open(result.url, '_blank');
+      // Aggiorna num doc
+      const nuovoNum = (num + 1).toString().padStart(3, '0');
+      const anno = new Date().getFullYear();
+      document.getElementById('num-doc').textContent = `DNL-${anno}-${nuovoNum}`;
+    } else {
+      mostraStato('❌ ' + (result.errore || 'Errore'), 'errore');
+    }
+  } catch(e) {
+    mostraStato('❌ Errore di connessione al backend', 'errore');
+  }
+  document.getElementById('btn-salva-genera').disabled = false;
+}
+
+// ============================================================
+// REGISTRO
+// ============================================================
+async function caricaRegistro() {
+  document.getElementById('tbody-registro').innerHTML =
+    '<tr><td colspan="9" style="text-align:center;padding:30px;">Caricamento...</td></tr>';
+  try {
+    const res = await fetch(APPS_SCRIPT_URL + '?action=getRegistro');
+    const data = await res.json();
+    if (!data.righe || data.righe.length === 0) {
+      document.getElementById('tbody-registro').innerHTML =
+        '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--testo-sec);">Nessun documento registrato</td></tr>';
+      return;
+    }
+    document.getElementById('tbody-registro').innerHTML = data.righe.map(r => `
+      <tr>
+        <td><strong>${r.numDoc}</strong></td>
+        <td>${r.data}</td>
+        <td><span class="badge badge-${r.tipo === 'preventivo' ? 'prev' : 'contr'}">${r.tipo === 'preventivo' ? 'Preventivo' : 'Contratto'}</span></td>
+        <td>${r.cliente}</td>
+        <td>${r.veicolo}</td>
+        <td style="font-family:monospace;">${r.targa}</td>
+        <td>€ ${parseFloat(r.prezzo||0).toLocaleString('it-IT')}</td>
+        <td>${r.venditore}</td>
+        <td>${r.urlPdf ? `<a class="link-pdf" href="${r.urlPdf}" target="_blank">📄 Apri</a>` : '–'}</td>
+      </tr>`).join('');
+  } catch(e) {
+    document.getElementById('tbody-registro').innerHTML =
+      '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--rosso);">Errore caricamento dati</td></tr>';
+  }
+}
+
+// ============================================================
+// STATO NOTIFICA
+// ============================================================
+function mostraStato(msg, tipo) {
+  const el = document.getElementById('stato-operazione');
+  el.textContent = msg;
+  el.className = tipo === 'errore' ? 'errore' : tipo === 'successo' ? 'successo' : '';
+  el.style.display = 'block';
+  if (tipo !== 'normale') setTimeout(() => el.style.display = 'none', 4000);
+}
+
+// ============================================================
+// RESET
+// ============================================================
+function resetForm() {
+  if (!confirm('Cancellare tutti i dati inseriti?')) return;
+  document.querySelectorAll('input[type=text], input[type=number], input[type=email], input[type=tel], input[type=date], input[type=month], textarea').forEach(el => el.value = '');
+  document.querySelectorAll('input[type=checkbox]').forEach(el => el.checked = false);
+  document.getElementById('permuta-campi').style.display = 'none';
+  document.getElementById('finanziamento-campi').style.display = 'none';
+  document.getElementById('veicolo-trovato-box').style.display = 'none';
+  document.querySelectorAll('.garanzia-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector('.garanzia-card').classList.add('selected');
+  garanziaSelezionata = { nome:'Nessuna', durata:'–', prezzo:0 };
+  document.querySelectorAll('.pills .pill').forEach((p,i) => p.classList.toggle('active', i===0));
+  document.getElementById('tipo-veicolo').value = 'Usato';
+  const oggi = new Date().toISOString().split('T')[0];
+  document.getElementById('data-doc').value = oggi;
+  calcolaRiepilogo();
+  aggiornaRiepilogoCliente(); aggiornaRiepilogoVeicolo();
+  mostraStato('Form azzerato', 'successo');
+}
+</script>
+</body>
+</html>
