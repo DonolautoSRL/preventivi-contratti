@@ -1093,7 +1093,13 @@ async function cercaVeicolo() {
       aggiornaRiepilogoVeicolo(); calcolaRiepilogo();
       mostraStato('✅ Veicolo trovato e caricato', 'successo');
     } else {
-      const msg = data.msg ? '⚠️ ' + data.msg : '⚠️ Non trovato in inventario. Compila manualmente.';
+      let msg = '⚠️ Non trovato in inventario.';
+      if (data.debug) {
+        console.log('DEBUG ricerca veicolo:', data.debug);
+        msg = '⚠️ Non trovato. Foglio: "' + data.debug.foglio + '" (' + data.debug.numRighe + ' righe). Apri la console (F12) per dettagli.';
+      } else if (data.msg) {
+        msg = '⚠️ ' + data.msg;
+      }
       mostraStato(msg, 'errore');
       document.getElementById('veicolo-trovato-box').style.display = 'none';
     }
