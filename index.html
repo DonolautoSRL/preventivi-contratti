@@ -33,7 +33,6 @@
     background: white; border-radius: 16px; padding: 40px 48px;
     text-align: center; width: 340px; box-shadow: 0 8px 40px rgba(0,0,0,0.3);
   }
-  .login-box img { height: 48px; margin-bottom: 20px; }
   .login-box h2 { font-size: 18px; color: var(--blu); margin-bottom: 8px; }
   .login-box p { color: var(--testo-sec); font-size: 13px; margin-bottom: 24px; }
   .login-box input {
@@ -58,8 +57,9 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   }
   .header-brand { display: flex; align-items: center; gap: 12px; }
-  .header-brand span { font-size: 17px; font-weight: 700; letter-spacing: .3px; }
-  .header-brand small { font-size: 11px; opacity: .7; display: block; margin-top: 1px; }
+  .header-brand .title-block { display: flex; flex-direction: column; }
+  .header-brand .title-block > span { font-size: 17px; font-weight: 700; letter-spacing: .3px; }
+  .header-brand small { font-size: 11px; opacity: .7; margin-top: 1px; }
   .header-actions { display: flex; gap: 10px; }
   .btn-header {
     padding: 7px 16px; border-radius: 7px; font-size: 13px; font-weight: 600;
@@ -143,14 +143,18 @@
   .campo input.filled { background: #f0f7ff; border-color: #93c5fd; }
   .campo-note { font-size: 11px; color: var(--testo-sec); margin-top: 4px; }
 
-  /* VEICOLO LOOKUP */
-  .lookup-bar { display: flex; gap: 10px; margin-bottom: 16px; }
+  /* LOOKUP VEICOLO */
+  .lookup-bar { display: flex; gap: 8px; margin-bottom: 16px; align-items: stretch; }
+  .lookup-bar select {
+    padding: 10px 12px; border: 2px solid var(--grigio-bordo); border-radius: 8px;
+    font-size: 14px; font-weight: 600; background: white; cursor: pointer; outline: none;
+  }
   .lookup-bar input {
     flex: 1; padding: 10px 14px; border: 2px solid var(--grigio-bordo);
     border-radius: 8px; font-size: 15px; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 2px; outline: none; font-family: inherit;
+    letter-spacing: 1.5px; outline: none; font-family: inherit;
   }
-  .lookup-bar input:focus { border-color: var(--blu-chiaro); }
+  .lookup-bar input:focus, .lookup-bar select:focus { border-color: var(--blu-chiaro); }
   .btn-cerca {
     padding: 10px 22px; background: var(--blu); color: white; border: none;
     border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
@@ -164,7 +168,15 @@
   }
   .veicolo-trovato strong { font-size: 15px; display: block; margin-bottom: 4px; }
 
-  /* TIPO VEICOLO PILLS */
+  /* CLIENTE TROVATO BAR */
+  .cliente-trovato-bar {
+    background: #fff8e1; border: 1.5px solid #f4c430;
+    border-radius: 8px; padding: 10px 14px; margin-top: 8px;
+    font-size: 13px; color: #7c5a10; display: none; align-items: center; gap: 10px;
+  }
+  .cliente-trovato-bar.success { background: var(--verde-chiaro); border-color: #6fcf97; color: var(--verde); }
+
+  /* PILLS */
   .pills { display: flex; gap: 8px; flex-wrap: wrap; }
   .pill {
     padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
@@ -173,7 +185,7 @@
   }
   .pill.active { background: var(--blu); color: white; border-color: var(--blu); }
 
-  /* PERMUTA TOGGLE */
+  /* PERMUTA / FINANZIAMENTO TOGGLE */
   .toggle-row {
     display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
   }
@@ -194,21 +206,30 @@
   input:checked + .toggle-slider:before { transform: translateX(18px); }
   .toggle-label { font-size: 14px; font-weight: 600; color: var(--testo); }
 
-  /* GARANZIA CARDS */
-  .garanzia-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
-  .garanzia-card {
-    border: 2px solid var(--grigio-bordo); border-radius: 9px; padding: 14px;
-    cursor: pointer; transition: all .15s; background: white;
-    text-align: center;
+  /* GARANZIE - tipo selettore */
+  .garanzia-tipo-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px; margin-bottom: 16px;
   }
-  .garanzia-card:hover { border-color: var(--blu-chiaro); }
-  .garanzia-card.selected { border-color: var(--blu); background: #eff6ff; }
-  .garanzia-card .nome { font-size: 13px; font-weight: 700; color: var(--testo); margin-bottom: 4px; }
-  .garanzia-card .durata { font-size: 11px; color: var(--testo-sec); margin-bottom: 8px; }
-  .garanzia-card .prezzo { font-size: 17px; font-weight: 700; color: var(--blu); }
-  .garanzia-card .prezzo-note { font-size: 10px; color: var(--testo-sec); }
+  .garanzia-tipo-card {
+    border: 2px solid var(--grigio-bordo); border-radius: 10px; padding: 14px 16px;
+    cursor: pointer; transition: all .2s; background: white;
+  }
+  .garanzia-tipo-card:hover { border-color: var(--blu-chiaro); background: #f8faff; }
+  .garanzia-tipo-card.selected { border-color: var(--blu); background: #eff6ff; }
+  .garanzia-tipo-card.selected.gt-mapfre { border-color: var(--verde); background: var(--verde-chiaro); }
+  .garanzia-tipo-card.selected.gt-vista { border-color: var(--arancio); background: var(--arancio-chiaro); }
+  .gt-nome { font-size: 14px; font-weight: 700; color: var(--testo); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+  .gt-desc { font-size: 11.5px; color: var(--testo-sec); line-height: 1.4; }
 
-  /* RIEPILOGO ECONOMICO */
+  /* CONFIG MAPFRE */
+  .mapfre-config {
+    background: #f8faff; border: 1.5px solid #93c5fd; border-radius: 10px;
+    padding: 16px; margin-top: 12px; display: none;
+  }
+  .mapfre-config.show { display: block; }
+
+  /* RIEPILOGO */
   .riepilogo-box {
     background: var(--grigio-bg); border-radius: 9px; padding: 18px;
     border: 1.5px solid var(--grigio-bordo);
@@ -224,16 +245,17 @@
   .riepilogo-riga .label { color: var(--testo-sec); }
   .riepilogo-riga .valore { font-weight: 600; }
   .neg { color: var(--rosso); }
+  .pos { color: var(--verde); }
 
-  /* PULSANTI AZIONE */
+  /* AZIONI BAR */
   .azioni-bar {
     position: sticky; bottom: 0; background: white;
     border-top: 2px solid var(--grigio-bordo); padding: 16px 20px;
     display: flex; justify-content: space-between; align-items: center;
-    box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.08); flex-wrap: wrap; gap: 10px;
   }
   .azioni-bar .info { font-size: 13px; color: var(--testo-sec); }
-  .azioni-bar .btns { display: flex; gap: 10px; }
+  .azioni-bar .btns { display: flex; gap: 10px; flex-wrap: wrap; }
   .btn {
     padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 600;
     cursor: pointer; border: none; transition: all .2s; display: flex; align-items: center; gap: 7px;
@@ -275,14 +297,13 @@
   #stato-operazione.successo { border-color: var(--verde); }
 
   .divider { border: none; border-top: 1.5px solid var(--grigio-bordo); margin: 16px 0; }
-  .empty-state { text-align: center; padding: 60px 20px; color: var(--testo-sec); }
-  .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
 
-  /* NUMERO CONTRATTO */
+  /* NUMERO DOC */
   .num-contratto {
     background: var(--grigio-bg); border-radius: 8px; padding: 10px 14px;
-    font-size: 20px; font-weight: 700; color: var(--blu); letter-spacing: 1px;
+    font-size: 18px; font-weight: 700; color: var(--blu); letter-spacing: .5px;
     display: inline-block; border: 1.5px solid var(--grigio-bordo);
+    font-family: 'Courier New', monospace;
   }
 </style>
 </head>
@@ -295,7 +316,7 @@
       <span style="color:#c0392b;">dono</span>lauto
     </div>
     <h2>Accesso riservato</h2>
-    <p>Inserisci il PIN per accedere al gestionale preventivi e contratti</p>
+    <p>Inserisci il PIN per accedere al gestionale</p>
     <input type="password" id="pin-input" placeholder="• • • • " maxlength="6"
       onkeydown="if(event.key==='Enter')verificaPin()">
     <button onclick="verificaPin()">Entra</button>
@@ -309,350 +330,368 @@
     <div style="font-size:20px;font-weight:900;letter-spacing:-0.5px;">
       <span style="color:#ef9f9f;">dono</span>lauto
     </div>
-    <div>
+    <div class="title-block">
       <span>Preventivi & Contratti</span>
       <small>Donolauto SRL – Via Romea 121, Legnaro (PD)</small>
     </div>
   </div>
   <div class="header-actions">
-    <button class="btn-header active" id="tab-nuovo" onclick="mostraTab('nuovo')">✏️ Nuovo documento</button>
-    <button class="btn-header" id="tab-registro" onclick="mostraTab('registro')">📋 Registro vendite</button>
+    <button class="btn-header active" id="tab-nuovo" onclick="mostraTab('nuovo')">✏️ Nuovo</button>
+    <button class="btn-header" id="tab-registro" onclick="mostraTab('registro')">📋 Registro</button>
   </div>
 </header>
 
-<!-- STATO OPERAZIONE -->
+<!-- STATO -->
 <div id="stato-operazione"></div>
 
 <!-- MAIN -->
 <main>
 
-  <!-- NUOVO DOCUMENTO -->
-  <div id="sezione-nuovo">
+<!-- ====================== NUOVO DOCUMENTO ====================== -->
+<div id="sezione-nuovo">
 
-    <!-- TIPO DOCUMENTO -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
-      <div>
-        <h2 style="font-size:18px;font-weight:700;color:var(--testo);">Nuovo documento</h2>
-        <p style="font-size:13px;color:var(--testo-sec);margin-top:3px;">Compila i campi e genera il PDF</p>
-      </div>
-      <div class="tipo-toggle">
-        <button class="tipo-btn active-prev" id="btn-preventivo" onclick="setTipo('preventivo')">
-          📄 Preventivo <span class="tipo-badge">1 pag.</span>
-        </button>
-        <button class="tipo-btn" id="btn-contratto" onclick="setTipo('contratto')">
-          📑 Contratto <span class="tipo-badge">4 pag.</span>
-        </button>
-      </div>
+  <!-- TIPO -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h2 style="font-size:18px;font-weight:700;color:var(--testo);">Nuovo documento</h2>
+      <p style="font-size:13px;color:var(--testo-sec);margin-top:3px;">Compila i campi e genera il PDF</p>
     </div>
-
-    <!-- NUMERO DOC -->
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
-      <div>
-        <div style="font-size:11px;font-weight:700;color:var(--testo-sec);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Numero documento</div>
-        <div class="num-contratto" id="num-doc">DNL-2026-001</div>
-      </div>
-      <div class="campo" style="flex:1;max-width:200px;">
-        <label>Data</label>
-        <input type="date" id="data-doc">
-      </div>
-      <div class="campo" style="flex:1;max-width:200px;">
-        <label>Venditore</label>
-        <input type="text" id="venditore" placeholder="Nome venditore">
-      </div>
+    <div class="tipo-toggle">
+      <button class="tipo-btn active-prev" id="btn-preventivo" onclick="setTipo('preventivo')">
+        📄 Preventivo <span class="tipo-badge">1 pag.</span>
+      </button>
+      <button class="tipo-btn" id="btn-contratto" onclick="setTipo('contratto')">
+        📑 Contratto <span class="tipo-badge">4 pag.</span>
+      </button>
     </div>
+  </div>
 
-    <!-- SEZIONE CLIENTE -->
-    <div class="sezione" id="sez-cliente">
-      <div class="sezione-header" onclick="toggleSezione('sez-cliente')">
-        <div class="icona" style="background:#e8f0fe;">👤</div>
-        <h3>Dati cliente</h3>
-        <small id="riepilogo-cliente" style="color:var(--testo-sec);">da compilare</small>
-        <span class="chevron">▼</span>
-      </div>
-      <div class="sezione-body">
+  <!-- NUMERO DOC -->
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap;">
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--testo-sec);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Numero documento</div>
+      <div class="num-contratto" id="num-doc">DNL-—————-N</div>
+      <div style="font-size:10.5px;color:var(--testo-sec);margin-top:3px;">Il numero viene assegnato al salvataggio</div>
+    </div>
+    <div class="campo" style="flex:1;max-width:200px;">
+      <label>Data</label>
+      <input type="date" id="data-doc">
+    </div>
+    <div class="campo" style="flex:1;max-width:220px;">
+      <label>Venditore</label>
+      <input type="text" id="venditore" placeholder="Nome venditore">
+    </div>
+  </div>
+
+  <!-- SEZIONE CLIENTE -->
+  <div class="sezione" id="sez-cliente">
+    <div class="sezione-header" onclick="toggleSezione('sez-cliente')">
+      <div class="icona" style="background:#e8f0fe;">👤</div>
+      <h3>Dati cliente</h3>
+      <small id="riepilogo-cliente" style="color:var(--testo-sec);">da compilare</small>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="sezione-body">
+
+      <!-- CF in cima per autocompletamento -->
+      <div style="background:#f8faff;border:1.5px solid #cdddef;border-radius:10px;padding:14px;margin-bottom:18px;">
+        <div style="font-size:12px;font-weight:700;color:var(--blu);margin-bottom:8px;">
+          💡 Inserisci prima il codice fiscale – compila automaticamente data nascita, sesso, e se è cliente esistente recupera tutti i dati
+        </div>
         <div class="grid grid-2">
           <div class="campo">
-            <label>Cognome e nome *</label>
-            <input type="text" id="cliente-nome" placeholder="es. Rossi Mario" oninput="aggiornaRiepilogoCliente()">
-          </div>
-          <div class="campo">
-            <label>Nato/a il</label>
-            <input type="date" id="cliente-nascita">
-          </div>
-          <div class="campo">
-            <label>Nato/a a</label>
-            <input type="text" id="cliente-nato-a" placeholder="Città di nascita">
-          </div>
-          <div class="campo">
-            <label>Provincia nascita</label>
-            <input type="text" id="cliente-nato-prov" placeholder="PD" maxlength="3">
-          </div>
-          <div class="campo">
-            <label>Telefono</label>
-            <input type="tel" id="cliente-tel" placeholder="049 000000">
-          </div>
-          <div class="campo">
-            <label>Cellulare</label>
-            <input type="tel" id="cliente-cell" placeholder="338 0000000">
-          </div>
-          <div class="campo span-2">
-            <label>Email</label>
-            <input type="email" id="cliente-email" placeholder="mario.rossi@email.it">
-          </div>
-          <div class="campo span-2">
-            <label>Residente a</label>
-            <input type="text" id="cliente-residenza" placeholder="Città di residenza">
-          </div>
-          <div class="campo">
-            <label>Provincia</label>
-            <input type="text" id="cliente-res-prov" placeholder="PD" maxlength="3">
-          </div>
-          <div class="campo span-2" style="grid-column:span 1;">
-            <label>Via / Indirizzo</label>
-            <input type="text" id="cliente-via" placeholder="Via Roma 1">
-          </div>
-          <div class="campo">
-            <label>CAP</label>
-            <input type="text" id="cliente-cap" placeholder="35020" maxlength="5">
-          </div>
-          <div class="campo span-2">
             <label>Codice fiscale</label>
-            <input type="text" id="cliente-cf" placeholder="RSSMRA80A01G224Z" maxlength="16" style="text-transform:uppercase;">
+            <input type="text" id="cliente-cf" placeholder="RSSMRA80A01G224Z" maxlength="16"
+              style="text-transform:uppercase;font-weight:700;letter-spacing:1px;"
+              oninput="this.value=this.value.toUpperCase()" onblur="processaCF()">
           </div>
           <div class="campo">
             <label>P. IVA (se azienda)</label>
             <input type="text" id="cliente-piva" placeholder="IT00000000000">
           </div>
+        </div>
+        <div class="cliente-trovato-bar" id="cliente-trovato-bar"></div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="campo">
+          <label>Cognome e nome *</label>
+          <input type="text" id="cliente-nome" placeholder="Rossi Mario" oninput="aggiornaRiepilogoCliente()">
+        </div>
+        <div class="campo">
+          <label>Nato/a il</label>
+          <input type="date" id="cliente-nascita">
+        </div>
+        <div class="campo">
+          <label>Nato/a a</label>
+          <input type="text" id="cliente-nato-a" placeholder="Città di nascita">
+        </div>
+        <div class="campo">
+          <label>Provincia nascita</label>
+          <input type="text" id="cliente-nato-prov" placeholder="PD" maxlength="3" style="text-transform:uppercase;">
+        </div>
+        <div class="campo">
+          <label>Telefono</label>
+          <input type="tel" id="cliente-tel" placeholder="049 000000">
+        </div>
+        <div class="campo">
+          <label>Cellulare</label>
+          <input type="tel" id="cliente-cell" placeholder="338 0000000">
+        </div>
+        <div class="campo span-2">
+          <label>Email</label>
+          <input type="email" id="cliente-email" placeholder="mario.rossi@email.it">
+        </div>
+        <div class="campo span-2">
+          <label>Residente a</label>
+          <input type="text" id="cliente-residenza" placeholder="Città di residenza">
+        </div>
+        <div class="campo">
+          <label>Provincia</label>
+          <input type="text" id="cliente-res-prov" placeholder="PD" maxlength="3" style="text-transform:uppercase;">
+        </div>
+        <div class="campo">
+          <label>Via / Indirizzo</label>
+          <input type="text" id="cliente-via" placeholder="Via Roma 1">
+        </div>
+        <div class="campo">
+          <label>CAP</label>
+          <input type="text" id="cliente-cap" placeholder="35020" maxlength="5">
+        </div>
+        <div class="campo">
+          <label>Codice univoco (CU/SDI/PEC)</label>
+          <input type="text" id="cliente-cu" placeholder="SDI o PEC">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEZIONE VEICOLO -->
+  <div class="sezione" id="sez-veicolo">
+    <div class="sezione-header" onclick="toggleSezione('sez-veicolo')">
+      <div class="icona" style="background:#fff3e0;">🚗</div>
+      <h3>Veicolo in vendita</h3>
+      <small id="riepilogo-veicolo" style="color:var(--testo-sec);">da compilare</small>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="sezione-body">
+
+      <!-- LOOKUP -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:700;color:var(--testo-sec);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Cerca da INVENTARIO_AUTO</div>
+        <div class="lookup-bar">
+          <select id="tipo-ricerca">
+            <option value="targa">Targa</option>
+            <option value="telaio">Telaio (VIN)</option>
+          </select>
+          <input type="text" id="targa-cerca" placeholder="AA000BB oppure WVWZZZ..."
+            style="text-transform:uppercase;" onkeydown="if(event.key==='Enter')cercaVeicolo()">
+          <button class="btn-cerca" onclick="cercaVeicolo()">🔍 Cerca</button>
+        </div>
+        <div class="veicolo-trovato" id="veicolo-trovato-box">
+          <strong id="vt-nome">–</strong>
+          <span id="vt-dettagli">–</span>
+        </div>
+      </div>
+
+      <!-- TIPO -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:700;color:var(--testo-sec);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;">Tipo veicolo</div>
+        <div class="pills">
+          <div class="pill active" onclick="setPill(this,'tipo-veicolo')">Usato</div>
+          <div class="pill" onclick="setPill(this,'tipo-veicolo')">KM0</div>
+          <div class="pill" onclick="setPill(this,'tipo-veicolo')">Nuovo</div>
+        </div>
+        <input type="hidden" id="tipo-veicolo" value="Usato">
+      </div>
+
+      <div class="grid grid-2">
+        <div class="campo">
+          <label>Marca *</label>
+          <input type="text" id="v-marca" placeholder="Volkswagen" oninput="aggiornaRiepilogoVeicolo()">
+        </div>
+        <div class="campo">
+          <label>Modello e allestimento *</label>
+          <input type="text" id="v-modello" placeholder="Golf 1.5 TSI Life" oninput="aggiornaRiepilogoVeicolo()">
+        </div>
+        <div class="campo">
+          <label>Chilometri</label>
+          <input type="number" id="v-km" placeholder="0">
+        </div>
+        <div class="campo">
+          <label>Data immatricolazione</label>
+          <input type="month" id="v-immat">
+        </div>
+        <div class="campo">
+          <label>Colore</label>
+          <input type="text" id="v-colore" placeholder="Bianco Perla">
+        </div>
+        <div class="campo">
+          <label>Targa</label>
+          <input type="text" id="v-targa" placeholder="AA 000 BB" style="text-transform:uppercase;">
+        </div>
+        <div class="campo span-2">
+          <label>Numero telaio (VIN)</label>
+          <input type="text" id="v-telaio" placeholder="WVWZZZ1KZ..." style="text-transform:uppercase;">
+        </div>
+        <div class="campo span-2">
+          <label>Note veicolo</label>
+          <input type="text" id="v-note" placeholder="Tagliando appena eseguito, cerchi in lega...">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEZIONE PERMUTA -->
+  <div class="sezione" id="sez-permuta">
+    <div class="sezione-header" onclick="toggleSezione('sez-permuta')">
+      <div class="icona" style="background:#f3e8ff;">🔄</div>
+      <h3>Permuta</h3>
+      <small style="color:var(--testo-sec);">opzionale</small>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="sezione-body">
+      <div class="toggle-row">
+        <label class="toggle-switch">
+          <input type="checkbox" id="permuta-toggle" onchange="togglePermuta()">
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="toggle-label">Il cliente porta un veicolo in permuta</span>
+      </div>
+      <div id="permuta-campi" style="display:none;">
+        <div class="grid grid-2">
+          <div class="campo"><label>Marca permuta</label><input type="text" id="p-marca"></div>
+          <div class="campo"><label>Modello e allestimento</label><input type="text" id="p-modello"></div>
+          <div class="campo"><label>Targa</label><input type="text" id="p-targa" style="text-transform:uppercase;"></div>
+          <div class="campo"><label>Telaio</label><input type="text" id="p-telaio" style="text-transform:uppercase;"></div>
+          <div class="campo"><label>Immatricolazione</label><input type="month" id="p-immat"></div>
+          <div class="campo"><label>Colore</label><input type="text" id="p-colore"></div>
+          <div class="campo"><label>Chilometri</label><input type="number" id="p-km"></div>
           <div class="campo">
-            <label>Codice univoco (CU)</label>
-            <input type="text" id="cliente-cu" placeholder="SDI o PEC">
+            <label>Proprietario è il cliente?</label>
+            <select id="p-proprietario">
+              <option value="SI">Sì</option>
+              <option value="NO">No – indicare sotto</option>
+            </select>
+          </div>
+          <div class="campo span-2" id="p-proprietario-altro" style="display:none;">
+            <label>Nominativo proprietario veicolo in permuta</label>
+            <input type="text" id="p-proprietario-nome" placeholder="Cognome e nome">
+          </div>
+          <div class="campo">
+            <label>Valutazione permuta €</label>
+            <input type="number" id="p-valore" placeholder="0" oninput="calcolaRiepilogo()">
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- SEZIONE VEICOLO -->
-    <div class="sezione" id="sez-veicolo">
-      <div class="sezione-header" onclick="toggleSezione('sez-veicolo')">
-        <div class="icona" style="background:#fff3e0;">🚗</div>
-        <h3>Veicolo in vendita</h3>
-        <small id="riepilogo-veicolo" style="color:var(--testo-sec);">da compilare</small>
-        <span class="chevron">▼</span>
+  <!-- SEZIONE GARANZIA - NUOVA VERSIONE -->
+  <div class="sezione" id="sez-garanzia">
+    <div class="sezione-header" onclick="toggleSezione('sez-garanzia')">
+      <div class="icona" style="background:#e8f5ee;">🛡️</div>
+      <h3>Garanzia</h3>
+      <small id="riep-garanzia" style="color:var(--testo-sec);">Garanzia legale 12 mesi</small>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="sezione-body">
+      <div style="font-size:13px;color:var(--testo-sec);margin-bottom:12px;">Seleziona il tipo di garanzia applicato alla vendita</div>
+
+      <div class="garanzia-tipo-grid">
+        <div class="garanzia-tipo-card selected gt-legale" id="gt-legale" onclick="setTipoGaranzia('legale')">
+          <div class="gt-nome">⚖️ Garanzia legale 12 mesi</div>
+          <div class="gt-desc">Obbligatoria per legge sui beni usati (D.Lgs. 170/2021). Nessun costo aggiuntivo per il cliente.</div>
+        </div>
+        <div class="garanzia-tipo-card gt-mapfre" id="gt-mapfre" onclick="setTipoGaranzia('mapfre')">
+          <div class="gt-nome">🛡️ Mapfre Mawdy Valencia</div>
+          <div class="gt-desc">Garanzia commerciale estesa (12–60 mesi). Premio variabile in base a durata e veicolo.</div>
+        </div>
+        <div class="garanzia-tipo-card gt-vista" id="gt-vista" onclick="setTipoGaranzia('vista_piaciuta')">
+          <div class="gt-nome">👁️ Vista e piaciuta (solo P.IVA)</div>
+          <div class="gt-desc">Esclusione di ogni garanzia – applicabile esclusivamente a vendite B2B fatturate a P.IVA.</div>
+        </div>
       </div>
-      <div class="sezione-body">
-        <!-- LOOKUP TARGA -->
-        <div style="margin-bottom:16px;">
-          <div style="font-size:12px;font-weight:700;color:var(--testo-sec);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Cerca da inventario</div>
-          <div class="lookup-bar">
-            <input type="text" id="targa-cerca" placeholder="AA 000 BB" maxlength="10"
-              style="text-transform:uppercase;" onkeydown="if(event.key==='Enter')cercaVeicolo()">
-            <button class="btn-cerca" onclick="cercaVeicolo()">🔍 Cerca targa</button>
-          </div>
-          <div class="veicolo-trovato" id="veicolo-trovato-box">
-            <strong id="vt-nome">–</strong>
-            <span id="vt-dettagli">–</span>
-          </div>
-        </div>
 
-        <!-- TIPO -->
-        <div style="margin-bottom:16px;">
-          <div style="font-size:12px;font-weight:700;color:var(--testo-sec);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;">Tipo veicolo</div>
-          <div class="pills">
-            <div class="pill active" onclick="setPill(this,'tipo-veicolo')">Usato</div>
-            <div class="pill" onclick="setPill(this,'tipo-veicolo')">KM0</div>
-            <div class="pill" onclick="setPill(this,'tipo-veicolo')">Nuovo</div>
-          </div>
-          <input type="hidden" id="tipo-veicolo" value="Usato">
-        </div>
-
+      <!-- CONFIG MAPFRE -->
+      <div class="mapfre-config" id="mapfre-config">
+        <div style="font-weight:700;color:var(--blu);font-size:13px;margin-bottom:12px;">⚙️ Configurazione pacchetto Mapfre Mawdy Valencia</div>
         <div class="grid grid-2">
           <div class="campo">
-            <label>Marca *</label>
-            <input type="text" id="v-marca" placeholder="es. Volkswagen" oninput="aggiornaRiepilogoVeicolo()">
+            <label>Durata in mesi</label>
+            <select id="mapfre-mesi" onchange="aggiornaRiepGaranzia()">
+              <option value="12">12 mesi (1 anno)</option>
+              <option value="18">18 mesi</option>
+              <option value="24">24 mesi (2 anni)</option>
+              <option value="30">30 mesi</option>
+              <option value="36">36 mesi (3 anni)</option>
+              <option value="42">42 mesi</option>
+              <option value="48">48 mesi (4 anni)</option>
+              <option value="54">54 mesi</option>
+              <option value="60">60 mesi (5 anni)</option>
+            </select>
           </div>
           <div class="campo">
-            <label>Modello e allestimento *</label>
-            <input type="text" id="v-modello" placeholder="es. Golf 1.5 TSI Life" oninput="aggiornaRiepilogoVeicolo()">
+            <label>Premio garanzia € (manuale)</label>
+            <input type="number" id="mapfre-prezzo" placeholder="0" min="0"
+              oninput="aggiornaRiepGaranzia();calcolaRiepilogo()">
           </div>
-          <div class="campo">
-            <label>Chilometri</label>
-            <input type="number" id="v-km" placeholder="0">
-          </div>
-          <div class="campo">
-            <label>Data immatricolazione</label>
-            <input type="month" id="v-immat">
-          </div>
-          <div class="campo">
-            <label>Colore</label>
-            <input type="text" id="v-colore" placeholder="es. Bianco Perla">
-          </div>
-          <div class="campo">
-            <label>Targa</label>
-            <input type="text" id="v-targa" placeholder="AA 000 BB" style="text-transform:uppercase;">
-          </div>
-          <div class="campo span-2">
-            <label>Numero telaio (VIN)</label>
-            <input type="text" id="v-telaio" placeholder="WVWZZZ1KZ..." style="text-transform:uppercase;">
-          </div>
-          <div class="campo span-2">
-            <label>Note veicolo</label>
-            <input type="text" id="v-note" placeholder="es. Tagliando appena eseguito, cerchi in lega...">
-          </div>
+        </div>
+        <div class="campo" style="margin-top:12px;">
+          <label>Note aggiuntive garanzia</label>
+          <input type="text" id="garanzia-note" placeholder="es. Copertura motore, cambio, assistenza stradale 24h">
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- SEZIONE PERMUTA -->
-    <div class="sezione" id="sez-permuta">
-      <div class="sezione-header" onclick="toggleSezione('sez-permuta')">
-        <div class="icona" style="background:#f3e8ff;">🔄</div>
-        <h3>Permuta</h3>
-        <small style="color:var(--testo-sec);">opzionale</small>
-        <span class="chevron">▼</span>
-      </div>
-      <div class="sezione-body">
-        <div class="toggle-row">
-          <label class="toggle-switch">
-            <input type="checkbox" id="permuta-toggle" onchange="togglePermuta()">
-            <span class="toggle-slider"></span>
-          </label>
-          <span class="toggle-label">Il cliente porta un veicolo in permuta</span>
-        </div>
-        <div id="permuta-campi" style="display:none;">
-          <div class="grid grid-2">
-            <div class="campo">
-              <label>Marca permuta</label>
-              <input type="text" id="p-marca" placeholder="es. Fiat">
-            </div>
-            <div class="campo">
-              <label>Modello e allestimento</label>
-              <input type="text" id="p-modello" placeholder="es. Panda 1.2">
-            </div>
-            <div class="campo">
-              <label>Targa</label>
-              <input type="text" id="p-targa" placeholder="AB 123 CD" style="text-transform:uppercase;">
-            </div>
-            <div class="campo">
-              <label>Telaio</label>
-              <input type="text" id="p-telaio" placeholder="ZFA..." style="text-transform:uppercase;">
-            </div>
-            <div class="campo">
-              <label>Immatricolazione</label>
-              <input type="month" id="p-immat">
-            </div>
-            <div class="campo">
-              <label>Colore</label>
-              <input type="text" id="p-colore">
-            </div>
-            <div class="campo">
-              <label>Chilometri</label>
-              <input type="number" id="p-km" placeholder="0">
-            </div>
-            <div class="campo">
-              <label>Proprietario è il cliente?</label>
-              <select id="p-proprietario">
-                <option value="SI">Sì</option>
-                <option value="NO">No – indicare sotto</option>
-              </select>
-            </div>
-            <div class="campo span-2" id="p-proprietario-altro" style="display:none;">
-              <label>Nominativo proprietario veicolo in permuta</label>
-              <input type="text" id="p-proprietario-nome" placeholder="Cognome e nome">
-            </div>
-            <div class="campo">
-              <label>Valutazione permuta €</label>
-              <input type="number" id="p-valore" placeholder="0" oninput="calcolaRiepilogo()">
-            </div>
-          </div>
-        </div>
-      </div>
+  <!-- SEZIONE ECONOMICA -->
+  <div class="sezione" id="sez-economico">
+    <div class="sezione-header" onclick="toggleSezione('sez-economico')">
+      <div class="icona" style="background:#fef3c7;">💶</div>
+      <h3>Condizioni economiche</h3>
+      <small id="riepilogo-prezzo" style="color:var(--testo-sec);">da compilare</small>
+      <span class="chevron">▼</span>
     </div>
-
-    <!-- SEZIONE GARANZIA -->
-    <div class="sezione" id="sez-garanzia">
-      <div class="sezione-header" onclick="toggleSezione('sez-garanzia')">
-        <div class="icona" style="background:#e8f5ee;">🛡️</div>
-        <h3>Garanzia Mapfre Mawdy</h3>
-        <small style="color:var(--testo-sec);">opzionale</small>
-        <span class="chevron">▼</span>
-      </div>
-      <div class="sezione-body">
-        <p style="font-size:13px;color:var(--testo-sec);margin-bottom:16px;">Seleziona il pacchetto garanzia se incluso nella vendita</p>
-        <div class="garanzia-grid" id="garanzia-grid">
-          <div class="garanzia-card" onclick="selezionaGaranzia(this,'Nessuna','–','0')">
-            <div class="nome">Nessuna</div>
-            <div class="durata">–</div>
-            <div class="prezzo" style="color:var(--testo-sec);">€ 0</div>
-            <div class="prezzo-note">non inclusa</div>
-          </div>
-          <div class="garanzia-card selected" onclick="selezionaGaranzia(this,'Nessuna','–','0')" id="garanzia-sel"></div>
+    <div class="sezione-body">
+      <div class="grid grid-2">
+        <div class="campo">
+          <label>Prezzo di vendita € *</label>
+          <input type="number" id="prezzo-vendita" placeholder="0" oninput="calcolaRiepilogo()">
         </div>
-        <!-- Le card garanzia vengono generate da JS -->
-        <div style="margin-top:16px;" class="campo">
-          <label>Note garanzia</label>
-          <input type="text" id="garanzia-note" placeholder="es. Garanzia 12 mesi motore e cambio">
+        <div class="campo">
+          <label>Passaggio proprietà / immatricolazione €</label>
+          <input type="number" id="passaggio-prop" placeholder="0" oninput="calcolaRiepilogo()">
+        </div>
+        <div class="campo">
+          <label>Caparra confirmatoria €</label>
+          <input type="number" id="caparra" placeholder="0" oninput="calcolaRiepilogo()">
+        </div>
+        <div class="campo">
+          <label>Importo finanziato €</label>
+          <input type="number" id="imp-finanziato" placeholder="0">
         </div>
       </div>
-    </div>
 
-    <!-- SEZIONE CONDIZIONI ECONOMICHE -->
-    <div class="sezione" id="sez-economico">
-      <div class="sezione-header" onclick="toggleSezione('sez-economico')">
-        <div class="icona" style="background:#fef3c7;">💶</div>
-        <h3>Condizioni economiche</h3>
-        <small id="riepilogo-prezzo" style="color:var(--testo-sec);">da compilare</small>
-        <span class="chevron">▼</span>
+      <!-- FINANZIAMENTO -->
+      <div class="toggle-row" style="margin-top:14px;">
+        <label class="toggle-switch">
+          <input type="checkbox" id="finanziamento-toggle" onchange="toggleFinanziamento()">
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="toggle-label">Include dettagli finanziamento</span>
       </div>
-      <div class="sezione-body">
-        <div class="grid grid-2">
-          <div class="campo">
-            <label>Prezzo di vendita € *</label>
-            <input type="number" id="prezzo-vendita" placeholder="0" oninput="calcolaRiepilogo()">
-          </div>
-          <div class="campo">
-            <label>Passaggio proprietà / immatricolazione €</label>
-            <input type="number" id="passaggio-prop" placeholder="0" oninput="calcolaRiepilogo()">
-          </div>
-          <div class="campo">
-            <label>Caparra confirmatoria €</label>
-            <input type="number" id="caparra" placeholder="0" oninput="calcolaRiepilogo()">
-          </div>
-          <div class="campo">
-            <label>Importo finanziato €</label>
-            <input type="number" id="imp-finanziato" placeholder="0" oninput="calcolaRiepilogo()">
-          </div>
+      <div id="finanziamento-campi" style="display:none;">
+        <div class="grid grid-4" style="margin-top:10px;">
+          <div class="campo"><label>Spese pratica €</label><input type="number" id="fin-spese"></div>
+          <div class="campo"><label>N° rate</label><input type="number" id="fin-rate" placeholder="48"></div>
+          <div class="campo"><label>Importo rata €</label><input type="number" id="fin-rata"></div>
+          <div class="campo"><label>TAN %</label><input type="number" id="fin-tan" step="0.01"></div>
         </div>
+      </div>
 
-        <!-- FINANZIAMENTO -->
-        <div class="toggle-row" style="margin-top:14px;">
-          <label class="toggle-switch">
-            <input type="checkbox" id="finanziamento-toggle" onchange="toggleFinanziamento()">
-            <span class="toggle-slider"></span>
-          </label>
-          <span class="toggle-label">Include finanziamento</span>
-        </div>
-        <div id="finanziamento-campi" style="display:none;">
-          <div class="grid grid-4" style="margin-top:10px;">
-            <div class="campo">
-              <label>Spese apertura pratica €</label>
-              <input type="number" id="fin-spese" placeholder="0">
-            </div>
-            <div class="campo">
-              <label>N° rate</label>
-              <input type="number" id="fin-rate" placeholder="48">
-            </div>
-            <div class="campo">
-              <label>Importo rata €</label>
-              <input type="number" id="fin-rata" placeholder="0">
-            </div>
-            <div class="campo">
-              <label>TAN %</label>
-              <input type="number" id="fin-tan" placeholder="0.00" step="0.01">
-            </div>
-          </div>
-        </div>
-
-        <div class="campo" style="margin-top:14px;">
+      <div class="grid grid-2" style="margin-top:14px;">
+        <div class="campo">
           <label>Tipo pagamento</label>
           <select id="tipo-pagamento">
             <option>Contanti</option>
@@ -662,113 +701,116 @@
             <option>Assegno</option>
           </select>
         </div>
-
-        <div class="campo" style="margin-top:14px;">
-          <label>Previsione di consegna</label>
-          <input type="date" id="data-consegna">
-        </div>
-
-        <hr class="divider">
-
-        <!-- RIEPILOGO -->
-        <div class="riepilogo-box">
-          <div class="riepilogo-riga">
-            <span class="label">Prezzo vendita</span>
-            <span class="valore" id="r-prezzo">€ –</span>
-          </div>
-          <div class="riepilogo-riga">
-            <span class="label">– Permuta</span>
-            <span class="valore neg" id="r-permuta">€ 0</span>
-          </div>
-          <div class="riepilogo-riga">
-            <span class="label">+ Passaggio proprietà</span>
-            <span class="valore" id="r-passaggio">€ 0</span>
-          </div>
-          <div class="riepilogo-riga">
-            <span class="label">– Caparra versata</span>
-            <span class="valore neg" id="r-caparra">€ 0</span>
-          </div>
-          <div class="riepilogo-riga totale">
-            <span>Saldo finale</span>
-            <span id="r-saldo">€ –</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- NOTE AGGIUNTIVE -->
-    <div class="sezione" id="sez-note">
-      <div class="sezione-header" onclick="toggleSezione('sez-note')">
-        <div class="icona" style="background:#f1f5f9;">📝</div>
-        <h3>Note aggiuntive</h3>
-        <small style="color:var(--testo-sec);">opzionale</small>
-        <span class="chevron">▼</span>
-      </div>
-      <div class="sezione-body">
         <div class="campo">
-          <label>Note / pattuizioni supplementari / lavori da eseguire</label>
-          <textarea id="note-extra" placeholder="es. Veicolo consegnato con revisione, cerchi invernali inclusi, 2a chiave..."></textarea>
+          <label>Previsione di consegna (dal saldo)</label>
+          <select id="consegna-giorni">
+            <option value="7">Entro 7 giorni dal saldo</option>
+            <option value="15">Entro 15 giorni dal saldo</option>
+            <option value="20">Entro 20 giorni dal saldo</option>
+            <option value="30">Entro 30 giorni dal saldo</option>
+            <option value="45">Entro 45 giorni dal saldo</option>
+            <option value="60">Entro 60 giorni dal saldo</option>
+            <option value="da_definire">Da definire</option>
+          </select>
         </div>
       </div>
-    </div>
 
-    <!-- AZIONI -->
-    <div class="azioni-bar">
-      <div class="info" id="info-tipo-doc">📄 Stai generando un <strong>Preventivo</strong> (1 pagina)</div>
-      <div class="btns">
-        <button class="btn btn-secondario" onclick="resetForm()">🗑️ Cancella tutto</button>
-        <button class="btn btn-primario" onclick="generaDocumento()" id="btn-genera">
-          ⬇️ Genera PDF
-        </button>
-        <button class="btn btn-verde" onclick="salvaEGeneraDocumento()" id="btn-salva-genera">
-          ✅ Salva & Genera PDF
-        </button>
-      </div>
-    </div>
+      <hr class="divider">
 
-  </div><!-- fine sezione-nuovo -->
-
-  <!-- REGISTRO VENDITE -->
-  <div id="sezione-registro">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
-      <div>
-        <h2 style="font-size:18px;font-weight:700;">Registro vendite</h2>
-        <p style="font-size:13px;color:var(--testo-sec);margin-top:3px;">Tutti i documenti generati</p>
-      </div>
-      <button class="btn btn-primario" onclick="caricaRegistro()">🔄 Aggiorna</button>
-    </div>
-    <div class="sezione">
-      <div class="tabella-wrap">
-        <table id="tabella-registro">
-          <thead>
-            <tr>
-              <th>N° Doc.</th>
-              <th>Data</th>
-              <th>Tipo</th>
-              <th>Cliente</th>
-              <th>Veicolo</th>
-              <th>Targa</th>
-              <th>Prezzo €</th>
-              <th>Venditore</th>
-              <th>PDF</th>
-            </tr>
-          </thead>
-          <tbody id="tbody-registro">
-            <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--testo-sec);">Clicca "Aggiorna" per caricare i dati</td></tr>
-          </tbody>
-        </table>
+      <!-- RIEPILOGO -->
+      <div class="riepilogo-box">
+        <div class="riepilogo-riga">
+          <span class="label">Prezzo vendita</span>
+          <span class="valore" id="r-prezzo">€ –</span>
+        </div>
+        <div class="riepilogo-riga">
+          <span class="label">– Permuta</span>
+          <span class="valore neg" id="r-permuta">€ 0</span>
+        </div>
+        <div class="riepilogo-riga">
+          <span class="label">+ Passaggio proprietà</span>
+          <span class="valore" id="r-passaggio">€ 0</span>
+        </div>
+        <div class="riepilogo-riga">
+          <span class="label">+ Premio garanzia Mapfre</span>
+          <span class="valore" id="r-garanzia">€ 0</span>
+        </div>
+        <div class="riepilogo-riga">
+          <span class="label">– Caparra versata</span>
+          <span class="valore neg" id="r-caparra">€ 0</span>
+        </div>
+        <div class="riepilogo-riga totale">
+          <span>Saldo finale</span>
+          <span id="r-saldo">€ –</span>
+        </div>
       </div>
     </div>
   </div>
+
+  <!-- NOTE -->
+  <div class="sezione" id="sez-note">
+    <div class="sezione-header" onclick="toggleSezione('sez-note')">
+      <div class="icona" style="background:#f1f5f9;">📝</div>
+      <h3>Note aggiuntive</h3>
+      <small style="color:var(--testo-sec);">opzionale</small>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="sezione-body">
+      <div class="campo">
+        <label>Note / pattuizioni supplementari / lavori da eseguire</label>
+        <textarea id="note-extra" placeholder="es. Veicolo consegnato con revisione, cerchi invernali inclusi, 2a chiave..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- AZIONI -->
+  <div class="azioni-bar">
+    <div class="info" id="info-tipo-doc">📄 Stai generando un <strong>Preventivo</strong> (1 pagina)</div>
+    <div class="btns">
+      <button class="btn btn-secondario" onclick="resetForm()">🗑️ Cancella tutto</button>
+      <button class="btn btn-primario" onclick="generaDocumento()" id="btn-genera">
+        ⬇️ Solo PDF (no salvataggio)
+      </button>
+      <button class="btn btn-verde" onclick="salvaEGeneraDocumento()" id="btn-salva-genera">
+        ✅ Salva & Genera PDF
+      </button>
+    </div>
+  </div>
+
+</div><!-- fine sezione-nuovo -->
+
+<!-- ====================== REGISTRO ====================== -->
+<div id="sezione-registro">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h2 style="font-size:18px;font-weight:700;">Registro vendite</h2>
+      <p style="font-size:13px;color:var(--testo-sec);margin-top:3px;">Tutti i documenti generati</p>
+    </div>
+    <button class="btn btn-primario" onclick="caricaRegistro()">🔄 Aggiorna</button>
+  </div>
+  <div class="sezione">
+    <div class="tabella-wrap">
+      <table id="tabella-registro">
+        <thead><tr>
+          <th>N° Doc.</th><th>Data</th><th>Tipo</th><th>Cliente</th>
+          <th>Veicolo</th><th>Targa</th><th>Prezzo €</th><th>Venditore</th><th>PDF</th>
+        </tr></thead>
+        <tbody id="tbody-registro">
+          <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--testo-sec);">Caricamento...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
 </main>
 
 <script>
 // ============================================================
-// CONFIGURAZIONE
+// CONFIG
 // ============================================================
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-bffTfisPWIqHYY3sOn0BAxzF_2nhlAYz-Y_j2L8NnOOCijy9EOb4Vfa7trKnCr3V/exec';
-const PIN_CORRETTO = '1974'; // Cambia questo PIN
+const PIN_CORRETTO = '1974';
 
 // ============================================================
 // LOGIN
@@ -788,82 +830,99 @@ function verificaPin() {
 // ============================================================
 // INIT
 // ============================================================
-function init() {
-  // Data di oggi
+async function init() {
   const oggi = new Date().toISOString().split('T')[0];
   document.getElementById('data-doc').value = oggi;
+  // Chiedi numero documento al backend
+  caricaProssimoNumero();
+}
 
-  // Numero documento progressivo
-  const ultimo = parseInt(localStorage.getItem('dnl_ultimo_num') || '0');
-  const anno = new Date().getFullYear();
-  const num = (ultimo + 1).toString().padStart(3, '0');
-  document.getElementById('num-doc').textContent = `DNL-${anno}-${num}`;
-
-  // Garanzie Mapfre
-  generaCardsGaranzia();
+async function caricaProssimoNumero() {
+  try {
+    const res = await fetch(APPS_SCRIPT_URL + '?action=getNumeroDoc');
+    const data = await res.json();
+    if (data.numDoc) {
+      document.getElementById('num-doc').textContent = data.numDoc;
+    }
+  } catch(e) {
+    // fallback locale
+    const oggi = new Date();
+    const dataStr = oggi.getFullYear() + String(oggi.getMonth()+1).padStart(2,'0') + String(oggi.getDate()).padStart(2,'0');
+    document.getElementById('num-doc').textContent = 'DNL-' + dataStr + '-1';
+  }
 }
 
 // ============================================================
-// GARANZIE MAPFRE
+// GARANZIE
 // ============================================================
-const garanzie = [
-  { nome: 'Base 6 mesi', durata: '6 mesi', prezzo: 0 },
-  { nome: 'Base 12 mesi', durata: '12 mesi', prezzo: 0 },
-  { nome: 'Standard 12 mesi', durata: '12 mesi', prezzo: 0 },
-  { nome: 'Standard 24 mesi', durata: '24 mesi', prezzo: 0 },
-  { nome: 'Plus 12 mesi', durata: '12 mesi', prezzo: 0 },
-  { nome: 'Plus 24 mesi', durata: '24 mesi', prezzo: 0 },
-];
-let garanziaSelezionata = { nome: 'Nessuna', durata: '–', prezzo: 0 };
+let tipoGaranzia = 'legale'; // 'legale' | 'mapfre' | 'vista_piaciuta'
 
-function generaCardsGaranzia() {
-  const grid = document.getElementById('garanzia-grid');
-  grid.innerHTML = `
-    <div class="garanzia-card selected" onclick="selezionaGaranzia(this,'Nessuna','–',0)">
-      <div class="nome">Nessuna</div>
-      <div class="durata">–</div>
-      <div class="prezzo" style="color:var(--testo-sec);">€ 0</div>
-      <div class="prezzo-note">non inclusa</div>
-    </div>` +
-    garanzie.map(g => `
-    <div class="garanzia-card" onclick="selezionaGaranzia(this,'${g.nome}','${g.durata}',${g.prezzo})">
-      <div class="nome">${g.nome}</div>
-      <div class="durata">${g.durata}</div>
-      <div class="prezzo">${g.prezzo > 0 ? '€ '+g.prezzo : '–'}</div>
-      <div class="prezzo-note">${g.prezzo > 0 ? 'premio' : 'inserire prezzo'}</div>
-    </div>`).join('');
-}
-
-function selezionaGaranzia(el, nome, durata, prezzo) {
-  document.querySelectorAll('.garanzia-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  garanziaSelezionata = { nome, durata, prezzo: parseFloat(prezzo)||0 };
+function setTipoGaranzia(tipo) {
+  tipoGaranzia = tipo;
+  document.querySelectorAll('.garanzia-tipo-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('gt-' + (tipo === 'vista_piaciuta' ? 'vista' : tipo)).classList.add('selected');
+  document.getElementById('mapfre-config').classList.toggle('show', tipo === 'mapfre');
+  aggiornaRiepGaranzia();
   calcolaRiepilogo();
+}
+
+function aggiornaRiepGaranzia() {
+  const piccolo = document.getElementById('riep-garanzia');
+  if (tipoGaranzia === 'legale') {
+    piccolo.textContent = 'Garanzia legale 12 mesi';
+  } else if (tipoGaranzia === 'vista_piaciuta') {
+    piccolo.textContent = 'Vista e piaciuta (solo P.IVA)';
+  } else if (tipoGaranzia === 'mapfre') {
+    const mesi = document.getElementById('mapfre-mesi').value;
+    const prezzo = parseFloat(document.getElementById('mapfre-prezzo').value)||0;
+    piccolo.textContent = 'Mapfre Mawdy Valencia – ' + mesi + ' mesi' + (prezzo > 0 ? ' (€ ' + prezzo + ')' : '');
+  }
+}
+
+function getDatiGaranzia() {
+  if (tipoGaranzia === 'legale') {
+    return {
+      tipo: 'legale',
+      descrizione: 'Garanzia legale di conformità 12 mesi (D.Lgs. 170/2021)',
+      prezzo: 0,
+      mesi: 12,
+    };
+  }
+  if (tipoGaranzia === 'vista_piaciuta') {
+    return {
+      tipo: 'vista_piaciuta',
+      descrizione: 'Vendita "visto e piaciuto" – esclusione garanzia (B2B P.IVA)',
+      prezzo: 0,
+      mesi: 0,
+    };
+  }
+  const mesi = document.getElementById('mapfre-mesi').value;
+  const prezzo = parseFloat(document.getElementById('mapfre-prezzo').value)||0;
+  return {
+    tipo: 'mapfre',
+    descrizione: 'Mapfre Mawdy Valencia – ' + mesi + ' mesi',
+    prezzo: prezzo,
+    mesi: parseInt(mesi),
+  };
 }
 
 // ============================================================
 // TIPO DOCUMENTO
 // ============================================================
 let tipoDocumento = 'preventivo';
-
 function setTipo(tipo) {
   tipoDocumento = tipo;
-  document.getElementById('btn-preventivo').className =
-    'tipo-btn ' + (tipo === 'preventivo' ? 'active-prev' : '');
-  document.getElementById('btn-contratto').className =
-    'tipo-btn ' + (tipo === 'contratto' ? 'active-contr' : '');
-  document.getElementById('info-tipo-doc').innerHTML =
-    tipo === 'preventivo'
-      ? '📄 Stai generando un <strong>Preventivo</strong> (1 pagina)'
-      : '📑 Stai generando un <strong>Contratto di vendita</strong> (4 pagine + condizioni generali)';
+  document.getElementById('btn-preventivo').className = 'tipo-btn ' + (tipo === 'preventivo' ? 'active-prev' : '');
+  document.getElementById('btn-contratto').className = 'tipo-btn ' + (tipo === 'contratto' ? 'active-contr' : '');
+  document.getElementById('info-tipo-doc').innerHTML = tipo === 'preventivo'
+    ? '📄 Stai generando un <strong>Preventivo</strong> (1 pagina, senza condizioni generali)'
+    : '📑 Stai generando un <strong>Contratto di vendita</strong> (4 pagine + condizioni generali + garanzia)';
 }
 
 // ============================================================
 // UI HELPERS
 // ============================================================
-function toggleSezione(id) {
-  document.getElementById(id).classList.toggle('collapsed');
-}
+function toggleSezione(id) { document.getElementById(id).classList.toggle('collapsed'); }
 function mostraTab(tab) {
   document.getElementById('sezione-nuovo').style.display = tab === 'nuovo' ? 'block' : 'none';
   document.getElementById('sezione-registro').style.display = tab === 'registro' ? 'block' : 'none';
@@ -874,20 +933,22 @@ function mostraTab(tab) {
 function togglePermuta() {
   const on = document.getElementById('permuta-toggle').checked;
   document.getElementById('permuta-campi').style.display = on ? 'block' : 'none';
-  if (!on) calcolaRiepilogo();
+  calcolaRiepilogo();
 }
 function toggleFinanziamento() {
-  const on = document.getElementById('finanziamento-toggle').checked;
-  document.getElementById('finanziamento-campi').style.display = on ? 'grid' : 'none';
+  document.getElementById('finanziamento-campi').style.display =
+    document.getElementById('finanziamento-toggle').checked ? 'grid' : 'none';
 }
 function setPill(el, campo) {
   el.closest('.pills').querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
   document.getElementById(campo).value = el.textContent;
 }
-document.getElementById('p-proprietario').addEventListener('change', function() {
-  document.getElementById('p-proprietario-altro').style.display =
-    this.value === 'NO' ? 'block' : 'none';
+document.addEventListener('change', (e) => {
+  if (e.target.id === 'p-proprietario') {
+    document.getElementById('p-proprietario-altro').style.display =
+      e.target.value === 'NO' ? 'block' : 'none';
+  }
 });
 function aggiornaRiepilogoCliente() {
   const n = document.getElementById('cliente-nome').value;
@@ -896,69 +957,164 @@ function aggiornaRiepilogoCliente() {
 function aggiornaRiepilogoVeicolo() {
   const m = document.getElementById('v-marca').value;
   const mod = document.getElementById('v-modello').value;
-  const txt = [m, mod].filter(Boolean).join(' ') || 'da compilare';
-  document.getElementById('riepilogo-veicolo').textContent = txt;
+  document.getElementById('riepilogo-veicolo').textContent = [m, mod].filter(Boolean).join(' ') || 'da compilare';
 }
 
 // ============================================================
-// CALCOLO RIEPILOGO
+// RIEPILOGO
 // ============================================================
 function calcolaRiepilogo() {
-  const prezzo = parseFloat(document.getElementById('prezzo-vendita').value) || 0;
+  const prezzo = parseFloat(document.getElementById('prezzo-vendita').value)||0;
   const permuta = document.getElementById('permuta-toggle').checked
-    ? parseFloat(document.getElementById('p-valore').value) || 0 : 0;
-  const passaggio = parseFloat(document.getElementById('passaggio-prop').value) || 0;
-  const caparra = parseFloat(document.getElementById('caparra').value) || 0;
-  const saldo = prezzo - permuta + passaggio - caparra;
+    ? parseFloat(document.getElementById('p-valore').value)||0 : 0;
+  const passaggio = parseFloat(document.getElementById('passaggio-prop').value)||0;
+  const caparra = parseFloat(document.getElementById('caparra').value)||0;
+  const garanziaP = tipoGaranzia === 'mapfre'
+    ? parseFloat(document.getElementById('mapfre-prezzo').value)||0 : 0;
+  const saldo = prezzo - permuta + passaggio + garanziaP - caparra;
 
   const fmt = v => '€ ' + v.toLocaleString('it-IT', {minimumFractionDigits:0});
   document.getElementById('r-prezzo').textContent = prezzo ? fmt(prezzo) : '€ –';
   document.getElementById('r-permuta').textContent = fmt(permuta);
   document.getElementById('r-passaggio').textContent = fmt(passaggio);
+  document.getElementById('r-garanzia').textContent = fmt(garanziaP);
   document.getElementById('r-caparra').textContent = fmt(caparra);
   document.getElementById('r-saldo').textContent = prezzo ? fmt(saldo) : '€ –';
   document.getElementById('riepilogo-prezzo').textContent = prezzo ? fmt(prezzo) : 'da compilare';
 }
 
 // ============================================================
-// CERCA VEICOLO DA INVENTARIO
+// DECODER CODICE FISCALE
 // ============================================================
-async function cercaVeicolo() {
-  const targa = document.getElementById('targa-cerca').value.trim().toUpperCase().replace(/\s/g,'');
-  if (!targa) return;
-  mostraStato('Ricerca in corso...', 'normale');
+const MESI_CF = {A:1,B:2,C:3,D:4,E:5,H:6,L:7,M:8,P:9,R:10,S:11,T:12};
+
+function decodeCF(cf) {
+  cf = String(cf||'').toUpperCase().trim();
+  if (cf.length !== 16) return null;
+  if (!/^[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]$/.test(cf)) return null;
+
+  const anno2 = parseInt(cf.substring(6,8));
+  const meseChar = cf.substring(8,9);
+  const mese = MESI_CF[meseChar];
+  if (!mese) return null;
+  let giorno = parseInt(cf.substring(9,11));
+  const sesso = giorno > 40 ? 'F' : 'M';
+  if (giorno > 40) giorno -= 40;
+
+  // Anno completo: convenzione - se anno2 > (current_year_2digits + 5), allora 1900+, altrimenti 2000+
+  const annoOggi2 = new Date().getFullYear() % 100;
+  const anno = (anno2 > annoOggi2 + 5) ? 1900 + anno2 : 2000 + anno2;
+
+  const dataNascita = anno + '-' + String(mese).padStart(2,'0') + '-' + String(giorno).padStart(2,'0');
+  return { dataNascita, sesso, codiceCatastale: cf.substring(11,15) };
+}
+
+async function processaCF() {
+  const cf = document.getElementById('cliente-cf').value.toUpperCase().trim();
+  const bar = document.getElementById('cliente-trovato-bar');
+  bar.style.display = 'none';
+  if (cf.length < 16) return;
+
+  // 1. Decoder locale (data nascita)
+  const decoded = decodeCF(cf);
+  if (decoded) {
+    if (!document.getElementById('cliente-nascita').value) {
+      document.getElementById('cliente-nascita').value = decoded.dataNascita;
+    }
+  }
+
+  // 2. Lookup nel registro clienti
   try {
-    const res = await fetch(APPS_SCRIPT_URL + '?action=cercaVeicolo&targa=' + targa);
+    const res = await fetch(APPS_SCRIPT_URL + '?action=cercaCliente&cf=' + encodeURIComponent(cf));
     const data = await res.json();
     if (data.trovato) {
-      document.getElementById('v-targa').value = data.targa || targa;
-      document.getElementById('v-marca').value = data.marca || '';
-      document.getElementById('v-modello').value = data.modello || '';
-      document.getElementById('v-km').value = data.km || '';
-      document.getElementById('v-colore').value = data.colore || '';
-      document.getElementById('v-telaio').value = data.telaio || '';
-      if (data.immat) document.getElementById('v-immat').value = data.immat;
-      if (data.prezzo) document.getElementById('prezzo-vendita').value = data.prezzo;
-      document.getElementById('vt-nome').textContent = data.marca + ' ' + data.modello;
-      document.getElementById('vt-dettagli').textContent =
-        [data.km ? data.km + ' km' : '', data.colore, data.targa].filter(Boolean).join(' · ');
-      document.getElementById('veicolo-trovato-box').style.display = 'block';
-      aggiornaRiepilogoVeicolo(); calcolaRiepilogo();
-      mostraStato('✅ Veicolo trovato e caricato', 'successo');
-    } else {
-      mostraStato('⚠️ Targa non trovata in inventario. Compila manualmente.', 'normale');
-      document.getElementById('veicolo-trovato-box').style.display = 'none';
+      // Riempi solo campi vuoti
+      const setIfEmpty = (id, val) => {
+        const el = document.getElementById(id);
+        if (el && !el.value && val) el.value = val;
+      };
+      setIfEmpty('cliente-nome', data.nome);
+      setIfEmpty('cliente-nascita', data.nascita);
+      setIfEmpty('cliente-nato-a', data.natoA);
+      setIfEmpty('cliente-nato-prov', data.natoProv);
+      setIfEmpty('cliente-tel', data.tel);
+      setIfEmpty('cliente-cell', data.cell);
+      setIfEmpty('cliente-email', data.email);
+      setIfEmpty('cliente-residenza', data.residenza);
+      setIfEmpty('cliente-res-prov', data.resProv);
+      setIfEmpty('cliente-via', data.via);
+      setIfEmpty('cliente-cap', data.cap);
+      setIfEmpty('cliente-piva', data.piva);
+      setIfEmpty('cliente-cu', data.cu);
+      aggiornaRiepilogoCliente();
+
+      bar.className = 'cliente-trovato-bar success';
+      bar.style.display = 'flex';
+      bar.innerHTML = '✅ <strong>Cliente esistente:</strong> dati recuperati dal registro. ' +
+        (decoded ? 'Data nascita estratta dal CF.' : '');
+    } else if (decoded) {
+      bar.className = 'cliente-trovato-bar';
+      bar.style.display = 'flex';
+      bar.innerHTML = 'ℹ️ Nuovo cliente. Dalla decodifica del CF: ' +
+        'nato il <strong>' + new Date(decoded.dataNascita).toLocaleDateString('it-IT') + '</strong>, ' +
+        'sesso <strong>' + decoded.sesso + '</strong>, codice catastale <strong>' + decoded.codiceCatastale + '</strong>';
     }
-  } catch (e) {
-    mostraStato('⚠️ Compila i dati manualmente (backend non configurato)', 'normale');
-    document.getElementById('veicolo-trovato-box').style.display = 'none';
+  } catch(e) {
+    if (decoded) {
+      bar.className = 'cliente-trovato-bar';
+      bar.style.display = 'flex';
+      bar.innerHTML = 'ℹ️ Dalla decodifica del CF: nato il <strong>' +
+        new Date(decoded.dataNascita).toLocaleDateString('it-IT') + '</strong>, sesso <strong>' + decoded.sesso + '</strong>';
+    }
   }
 }
 
 // ============================================================
-// RACCOLTA DATI FORM
+// CERCA VEICOLO
+// ============================================================
+async function cercaVeicolo() {
+  const query = document.getElementById('targa-cerca').value.trim().toUpperCase().replace(/[\s\-\.]/g,'');
+  const tipo = document.getElementById('tipo-ricerca').value;
+  if (!query) return;
+  mostraStato('Ricerca in corso...', 'normale');
+  try {
+    const url = APPS_SCRIPT_URL + '?action=cercaVeicolo&tipo=' + tipo + '&query=' + encodeURIComponent(query);
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.trovato) {
+      document.getElementById('v-targa').value = data.targa || '';
+      document.getElementById('v-telaio').value = data.telaio || '';
+      document.getElementById('v-marca').value = data.marca || '';
+      document.getElementById('v-modello').value = data.modello || '';
+      document.getElementById('v-km').value = data.km || '';
+      document.getElementById('v-colore').value = data.colore || '';
+      if (data.immat) document.getElementById('v-immat').value = data.immat;
+      if (data.prezzo) document.getElementById('prezzo-vendita').value = data.prezzo;
+      document.getElementById('vt-nome').textContent = (data.marca||'') + ' ' + (data.modello||'');
+      document.getElementById('vt-dettagli').textContent =
+        [data.km ? data.km+' km' : '', data.colore, data.targa, data.telaio].filter(Boolean).join(' · ');
+      document.getElementById('veicolo-trovato-box').style.display = 'block';
+      aggiornaRiepilogoVeicolo(); calcolaRiepilogo();
+      mostraStato('✅ Veicolo trovato e caricato', 'successo');
+    } else {
+      const msg = data.msg ? '⚠️ ' + data.msg : '⚠️ Non trovato in inventario. Compila manualmente.';
+      mostraStato(msg, 'errore');
+      document.getElementById('veicolo-trovato-box').style.display = 'none';
+    }
+  } catch(e) {
+    mostraStato('⚠️ Errore connessione. Compila manualmente.', 'errore');
+  }
+}
+
+// ============================================================
+// RACCOGLI DATI
 // ============================================================
 function raccogliDati() {
+  const consegnaSel = document.getElementById('consegna-giorni').value;
+  const consegnaTesto = consegnaSel === 'da_definire'
+    ? 'Da definire'
+    : 'Entro ' + consegnaSel + ' giorni dal saldo';
+
   return {
     tipo: tipoDocumento,
     numDoc: document.getElementById('num-doc').textContent,
@@ -976,7 +1132,7 @@ function raccogliDati() {
       resProv: document.getElementById('cliente-res-prov').value,
       via: document.getElementById('cliente-via').value,
       cap: document.getElementById('cliente-cap').value,
-      cf: document.getElementById('cliente-cf').value,
+      cf: document.getElementById('cliente-cf').value.toUpperCase(),
       piva: document.getElementById('cliente-piva').value,
       cu: document.getElementById('cliente-cu').value,
     },
@@ -987,15 +1143,15 @@ function raccogliDati() {
       km: document.getElementById('v-km').value,
       immat: document.getElementById('v-immat').value,
       colore: document.getElementById('v-colore').value,
-      targa: document.getElementById('v-targa').value,
-      telaio: document.getElementById('v-telaio').value,
+      targa: document.getElementById('v-targa').value.toUpperCase(),
+      telaio: document.getElementById('v-telaio').value.toUpperCase(),
       note: document.getElementById('v-note').value,
     },
     permuta: document.getElementById('permuta-toggle').checked ? {
       marca: document.getElementById('p-marca').value,
       modello: document.getElementById('p-modello').value,
-      targa: document.getElementById('p-targa').value,
-      telaio: document.getElementById('p-telaio').value,
+      targa: document.getElementById('p-targa').value.toUpperCase(),
+      telaio: document.getElementById('p-telaio').value.toUpperCase(),
       immat: document.getElementById('p-immat').value,
       colore: document.getElementById('p-colore').value,
       km: document.getElementById('p-km').value,
@@ -1003,15 +1159,15 @@ function raccogliDati() {
       proprietarioNome: document.getElementById('p-proprietario-nome').value,
       valore: document.getElementById('p-valore').value,
     } : null,
-    garanzia: garanziaSelezionata,
-    garanziaNote: document.getElementById('garanzia-note').value,
+    garanzia: getDatiGaranzia(),
+    garanziaNote: document.getElementById('garanzia-note') ? document.getElementById('garanzia-note').value : '',
     economico: {
       prezzoVendita: document.getElementById('prezzo-vendita').value,
       passaggioProp: document.getElementById('passaggio-prop').value,
       caparra: document.getElementById('caparra').value,
       impFinanziato: document.getElementById('imp-finanziato').value,
       tipoPagamento: document.getElementById('tipo-pagamento').value,
-      dataConsegna: document.getElementById('data-consegna').value,
+      consegnaTesto: consegnaTesto,
       finSpese: document.getElementById('fin-spese').value,
       finRate: document.getElementById('fin-rate').value,
       finRata: document.getElementById('fin-rata').value,
@@ -1021,19 +1177,19 @@ function raccogliDati() {
   };
 }
 
-// ============================================================
-// VALIDAZIONE
-// ============================================================
 function validaDati(dati) {
   if (!dati.cliente.nome) return 'Inserisci cognome e nome del cliente.';
   if (!dati.veicolo.marca) return 'Inserisci la marca del veicolo.';
   if (!dati.veicolo.modello) return 'Inserisci il modello del veicolo.';
   if (!dati.economico.prezzoVendita) return 'Inserisci il prezzo di vendita.';
+  if (dati.garanzia.tipo === 'vista_piaciuta' && !dati.cliente.piva) {
+    return 'La formula "visto e piaciuto" è riservata a clienti con P.IVA.';
+  }
   return null;
 }
 
 // ============================================================
-// GENERA DOCUMENTO
+// GENERA / SALVA
 // ============================================================
 async function generaDocumento() {
   const dati = raccogliDati();
@@ -1054,7 +1210,7 @@ async function generaDocumento() {
       mostraStato('❌ Errore: ' + (result.errore || 'sconosciuto'), 'errore');
     }
   } catch(e) {
-    mostraStato('❌ Errore di connessione al backend', 'errore');
+    mostraStato('❌ Errore di connessione', 'errore');
   }
   document.getElementById('btn-genera').disabled = false;
 }
@@ -1072,20 +1228,16 @@ async function salvaEGeneraDocumento() {
     });
     const result = await res.json();
     if (result.url) {
-      // Aggiorna numero progressivo
-      const num = parseInt(dati.numDoc.split('-')[2]);
-      localStorage.setItem('dnl_ultimo_num', num);
-      mostraStato('✅ Salvato nel registro e PDF generato!', 'successo');
+      mostraStato('✅ Salvato come ' + result.numDoc + ' – PDF generato!', 'successo');
       window.open(result.url, '_blank');
-      // Aggiorna num doc
-      const nuovoNum = (num + 1).toString().padStart(3, '0');
-      const anno = new Date().getFullYear();
-      document.getElementById('num-doc').textContent = `DNL-${anno}-${nuovoNum}`;
+      document.getElementById('num-doc').textContent = result.numDoc;
+      // Ricarica numero per il prossimo documento
+      setTimeout(caricaProssimoNumero, 1500);
     } else {
       mostraStato('❌ ' + (result.errore || 'Errore'), 'errore');
     }
   } catch(e) {
-    mostraStato('❌ Errore di connessione al backend', 'errore');
+    mostraStato('❌ Errore di connessione', 'errore');
   }
   document.getElementById('btn-salva-genera').disabled = false;
 }
@@ -1106,14 +1258,14 @@ async function caricaRegistro() {
     }
     document.getElementById('tbody-registro').innerHTML = data.righe.map(r => `
       <tr>
-        <td><strong>${r.numDoc}</strong></td>
+        <td><strong style="font-family:monospace;">${r.numDoc}</strong></td>
         <td>${r.data}</td>
         <td><span class="badge badge-${r.tipo === 'preventivo' ? 'prev' : 'contr'}">${r.tipo === 'preventivo' ? 'Preventivo' : 'Contratto'}</span></td>
         <td>${r.cliente}</td>
         <td>${r.veicolo}</td>
-        <td style="font-family:monospace;">${r.targa}</td>
+        <td style="font-family:monospace;">${r.targa||'–'}</td>
         <td>€ ${parseFloat(r.prezzo||0).toLocaleString('it-IT')}</td>
-        <td>${r.venditore}</td>
+        <td>${r.venditore||'–'}</td>
         <td>${r.urlPdf ? `<a class="link-pdf" href="${r.urlPdf}" target="_blank">📄 Apri</a>` : '–'}</td>
       </tr>`).join('');
   } catch(e) {
@@ -1123,19 +1275,16 @@ async function caricaRegistro() {
 }
 
 // ============================================================
-// STATO NOTIFICA
+// STATO / RESET
 // ============================================================
 function mostraStato(msg, tipo) {
   const el = document.getElementById('stato-operazione');
   el.textContent = msg;
   el.className = tipo === 'errore' ? 'errore' : tipo === 'successo' ? 'successo' : '';
   el.style.display = 'block';
-  if (tipo !== 'normale') setTimeout(() => el.style.display = 'none', 4000);
+  if (tipo !== 'normale') setTimeout(() => el.style.display = 'none', 4500);
 }
 
-// ============================================================
-// RESET
-// ============================================================
 function resetForm() {
   if (!confirm('Cancellare tutti i dati inseriti?')) return;
   document.querySelectorAll('input[type=text], input[type=number], input[type=email], input[type=tel], input[type=date], input[type=month], textarea').forEach(el => el.value = '');
@@ -1143,15 +1292,14 @@ function resetForm() {
   document.getElementById('permuta-campi').style.display = 'none';
   document.getElementById('finanziamento-campi').style.display = 'none';
   document.getElementById('veicolo-trovato-box').style.display = 'none';
-  document.querySelectorAll('.garanzia-card').forEach(c => c.classList.remove('selected'));
-  document.querySelector('.garanzia-card').classList.add('selected');
-  garanziaSelezionata = { nome:'Nessuna', durata:'–', prezzo:0 };
+  document.getElementById('cliente-trovato-bar').style.display = 'none';
+  setTipoGaranzia('legale');
   document.querySelectorAll('.pills .pill').forEach((p,i) => p.classList.toggle('active', i===0));
   document.getElementById('tipo-veicolo').value = 'Usato';
-  const oggi = new Date().toISOString().split('T')[0];
-  document.getElementById('data-doc').value = oggi;
+  document.getElementById('data-doc').value = new Date().toISOString().split('T')[0];
   calcolaRiepilogo();
   aggiornaRiepilogoCliente(); aggiornaRiepilogoVeicolo();
+  caricaProssimoNumero();
   mostraStato('Form azzerato', 'successo');
 }
 </script>
