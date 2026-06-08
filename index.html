@@ -403,7 +403,8 @@
             <label>Codice fiscale</label>
             <input type="text" id="cliente-cf" placeholder="RSSMRA80A01G224Z" maxlength="16"
               style="text-transform:uppercase;font-weight:700;letter-spacing:1px;"
-              oninput="this.value=this.value.toUpperCase()" onblur="processaCF()">
+              oninput="this.value=this.value.toUpperCase();if(this.value.length===16)processaCF();"
+              onblur="processaCF()">
           </div>
           <div class="campo">
             <label>P. IVA (se azienda)</label>
@@ -506,13 +507,9 @@
       </div>
 
       <div class="grid grid-2">
-        <div class="campo">
-          <label>Marca *</label>
-          <input type="text" id="v-marca" placeholder="Volkswagen" oninput="aggiornaRiepilogoVeicolo()">
-        </div>
-        <div class="campo">
-          <label>Modello e allestimento *</label>
-          <input type="text" id="v-modello" placeholder="Golf 1.5 TSI Life" oninput="aggiornaRiepilogoVeicolo()">
+        <div class="campo span-2">
+          <label>Marca e modello *</label>
+          <input type="text" id="v-marcamodello" placeholder="Volkswagen Golf 1.5 TSI Life" oninput="aggiornaRiepilogoVeicolo()">
         </div>
         <div class="campo">
           <label>Chilometri</label>
@@ -767,9 +764,12 @@
   <div class="azioni-bar">
     <div class="info" id="info-tipo-doc">📄 Stai generando un <strong>Preventivo</strong> (1 pagina)</div>
     <div class="btns">
-      <button class="btn btn-secondario" onclick="resetForm()">🗑️ Cancella tutto</button>
-      <button class="btn btn-primario" onclick="generaDocumento()" id="btn-genera">
-        ⬇️ Solo PDF (no salvataggio)
+      <button class="btn btn-secondario" onclick="resetForm()">🗑️ Cancella</button>
+      <button class="btn btn-secondario" onclick="generaDocumento()" id="btn-genera">
+        ⬇️ Anteprima PDF
+      </button>
+      <button class="btn btn-primario" onclick="stampaDocumento()" id="btn-stampa">
+        🖨️ Stampa
       </button>
       <button class="btn btn-verde" onclick="salvaEGeneraDocumento()" id="btn-salva-genera">
         ✅ Salva & Genera PDF
@@ -955,9 +955,8 @@ function aggiornaRiepilogoCliente() {
   document.getElementById('riepilogo-cliente').textContent = n || 'da compilare';
 }
 function aggiornaRiepilogoVeicolo() {
-  const m = document.getElementById('v-marca').value;
-  const mod = document.getElementById('v-modello').value;
-  document.getElementById('riepilogo-veicolo').textContent = [m, mod].filter(Boolean).join(' ') || 'da compilare';
+  const mm = document.getElementById('v-marcamodello').value;
+  document.getElementById('riepilogo-veicolo').textContent = mm || 'da compilare';
 }
 
 // ============================================================
@@ -1084,15 +1083,12 @@ async function cercaVeicolo() {
     if (data.trovato) {
       document.getElementById('v-targa').value = data.targa || '';
       document.getElementById('v-telaio').value = data.telaio || '';
-      document.getElementById('v-marca').value = data.marca || '';
-      document.getElementById('v-modello').value = data.modello || '';
+      document.getElementById('v-marcamodello').value = data.marcaModello || '';
       document.getElementById('v-km').value = data.km || '';
-      document.getElementById('v-colore').value = data.colore || '';
       if (data.immat) document.getElementById('v-immat').value = data.immat;
-      if (data.prezzo) document.getElementById('prezzo-vendita').value = data.prezzo;
-      document.getElementById('vt-nome').textContent = (data.marca||'') + ' ' + (data.modello||'');
+      document.getElementById('vt-nome').textContent = data.marcaModello || '–';
       document.getElementById('vt-dettagli').textContent =
-        [data.km ? data.km+' km' : '', data.colore, data.targa, data.telaio].filter(Boolean).join(' · ');
+        [data.km ? data.km+' km' : '', data.targa, data.telaio].filter(Boolean).join(' · ');
       document.getElementById('veicolo-trovato-box').style.display = 'block';
       aggiornaRiepilogoVeicolo(); calcolaRiepilogo();
       mostraStato('✅ Veicolo trovato e caricato', 'successo');
@@ -1138,8 +1134,7 @@ function raccogliDati() {
     },
     veicolo: {
       tipo: document.getElementById('tipo-veicolo').value,
-      marca: document.getElementById('v-marca').value,
-      modello: document.getElementById('v-modello').value,
+      marcaModello: document.getElementById('v-marcamodello').value,
       km: document.getElementById('v-km').value,
       immat: document.getElementById('v-immat').value,
       colore: document.getElementById('v-colore').value,
@@ -1179,8 +1174,7 @@ function raccogliDati() {
 
 function validaDati(dati) {
   if (!dati.cliente.nome) return 'Inserisci cognome e nome del cliente.';
-  if (!dati.veicolo.marca) return 'Inserisci la marca del veicolo.';
-  if (!dati.veicolo.modello) return 'Inserisci il modello del veicolo.';
+  if (!dati.veicolo.marcaModello) return 'Inserisci marca e modello del veicolo.';
   if (!dati.economico.prezzoVendita) return 'Inserisci il prezzo di vendita.';
   if (dati.garanzia.tipo === 'vista_piaciuta' && !dati.cliente.piva) {
     return 'La formula "visto e piaciuto" è riservata a clienti con P.IVA.';
@@ -1213,6 +1207,32 @@ async function generaDocumento() {
     mostraStato('❌ Errore di connessione', 'errore');
   }
   document.getElementById('btn-genera').disabled = false;
+}
+
+async function stampaDocumento() {
+  const dati = raccogliDati();
+  const err = validaDati(dati);
+  if (err) { mostraStato('❌ ' + err, 'errore'); return; }
+  mostraStato('⏳ Preparazione stampa...', 'normale');
+  document.getElementById('btn-stampa').disabled = true;
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'generaPDF', dati })
+    });
+    const result = await res.json();
+    if (result.url) {
+      mostraStato('🖨️ Documento pronto – apertura per la stampa...', 'successo');
+      // Apre il PDF in una nuova finestra: da lì Ctrl+P o icona stampa
+      const w = window.open(result.url, '_blank');
+      // Avviso: dalla finestra del PDF, usa l'icona stampante o Ctrl+P
+    } else {
+      mostraStato('❌ Errore: ' + (result.errore || 'sconosciuto'), 'errore');
+    }
+  } catch(e) {
+    mostraStato('❌ Errore di connessione', 'errore');
+  }
+  document.getElementById('btn-stampa').disabled = false;
 }
 
 async function salvaEGeneraDocumento() {
