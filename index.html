@@ -411,6 +411,14 @@
             <input type="text" id="cliente-piva" placeholder="IT00000000000">
           </div>
         </div>
+        <div style="margin-top:12px;">
+          <label style="display:block;font-size:12px;font-weight:600;color:var(--testo-sec);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;">Acquisto in qualità di</label>
+          <div class="pills">
+            <div class="pill active" onclick="setPill(this,'tipo-acquisto')" data-val="privato">👤 Privato</div>
+            <div class="pill" onclick="setPill(this,'tipo-acquisto')" data-val="piva">🏢 Titolare P.IVA</div>
+          </div>
+          <input type="hidden" id="tipo-acquisto" value="privato">
+        </div>
         <div class="cliente-trovato-bar" id="cliente-trovato-bar"></div>
       </div>
 
@@ -687,7 +695,7 @@
         </div>
       </div>
 
-      <div class="grid grid-2" style="margin-top:14px;">
+      <div class="grid grid-3" style="margin-top:14px;">
         <div class="campo">
           <label>Tipo pagamento</label>
           <select id="tipo-pagamento">
@@ -696,6 +704,13 @@
             <option>Rateale / Finanziamento</option>
             <option>Contanti + Finanziamento</option>
             <option>Assegno</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label>Regime IVA</label>
+          <select id="regime-iva">
+            <option value="margine">Regime del margine (IVA non esposta)</option>
+            <option value="esposta">IVA esposta 22%</option>
           </select>
         </div>
         <div class="campo">
@@ -942,7 +957,7 @@ function toggleFinanziamento() {
 function setPill(el, campo) {
   el.closest('.pills').querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById(campo).value = el.textContent;
+  document.getElementById(campo).value = el.dataset.val || el.textContent.trim();
 }
 document.addEventListener('change', (e) => {
   if (e.target.id === 'p-proprietario') {
@@ -1119,6 +1134,7 @@ function raccogliDati() {
 
   return {
     tipo: tipoDocumento,
+    tipoAcquisto: document.getElementById('tipo-acquisto').value,
     numDoc: document.getElementById('num-doc').textContent,
     dataDoc: document.getElementById('data-doc').value,
     venditore: document.getElementById('venditore').value,
@@ -1168,6 +1184,7 @@ function raccogliDati() {
       caparra: document.getElementById('caparra').value,
       impFinanziato: document.getElementById('imp-finanziato').value,
       tipoPagamento: document.getElementById('tipo-pagamento').value,
+      regimeIva: document.getElementById('regime-iva').value,
       consegnaTesto: consegnaTesto,
       finSpese: document.getElementById('fin-spese').value,
       finRate: document.getElementById('fin-rate').value,
@@ -1320,8 +1337,13 @@ function resetForm() {
   document.getElementById('veicolo-trovato-box').style.display = 'none';
   document.getElementById('cliente-trovato-bar').style.display = 'none';
   setTipoGaranzia('legale');
-  document.querySelectorAll('.pills .pill').forEach((p,i) => p.classList.toggle('active', i===0));
+  // Reset di ogni gruppo pill: attiva il primo di ciascun gruppo
+  document.querySelectorAll('.pills').forEach(gruppo => {
+    gruppo.querySelectorAll('.pill').forEach((p,i) => p.classList.toggle('active', i===0));
+  });
   document.getElementById('tipo-veicolo').value = 'Usato';
+  document.getElementById('tipo-acquisto').value = 'privato';
+  document.getElementById('regime-iva').value = 'margine';
   document.getElementById('data-doc').value = new Date().toISOString().split('T')[0];
   calcolaRiepilogo();
   aggiornaRiepilogoCliente(); aggiornaRiepilogoVeicolo();
