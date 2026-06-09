@@ -287,6 +287,18 @@
   .badge-contr { background: #e8f0fe; color: var(--blu); }
   .badge-ok { background: var(--verde-chiaro); color: var(--verde); }
   .link-pdf { color: var(--blu-chiaro); text-decoration: underline; cursor: pointer; font-size: 12px; }
+  .btn-azione {
+    border: none; background: transparent; cursor: pointer; font-size: 16px;
+    padding: 4px 7px; border-radius: 6px; transition: background .15s;
+  }
+  .btn-azione:hover { background: var(--grigio-bg); }
+  .btn-modifica:hover { background: #e8f0fe; }
+  .btn-elimina:hover { background: #fde8e8; }
+  .modifica-banner {
+    background: #fff8e1; border: 1.5px solid #f4c430; border-radius: 8px;
+    padding: 10px 16px; margin-bottom: 16px; font-size: 13px; color: #7c5a10;
+    display: none; align-items: center; gap: 10px;
+  }
 
   /* STATO */
   #stato-operazione {
@@ -352,6 +364,11 @@
 
 <!-- ====================== NUOVO DOCUMENTO ====================== -->
 <div id="sezione-nuovo">
+
+  <div class="modifica-banner" id="modifica-banner">
+    ✏️ <strong>Modalità modifica</strong> – stai modificando il documento <span id="modifica-num" style="font-family:monospace;font-weight:700;"></span>.
+    <button class="btn btn-secondario" style="padding:5px 12px;margin-left:auto;" onclick="annullaModifica()">Annulla modifica</button>
+  </div>
 
   <!-- TIPO -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
@@ -819,10 +836,10 @@
       <table id="tabella-registro">
         <thead><tr>
           <th>N° Doc.</th><th>Data</th><th>Tipo</th><th>Cliente</th>
-          <th>Veicolo</th><th>Targa</th><th>Prezzo €</th><th>Venditore</th><th>PDF</th>
+          <th>Veicolo</th><th>Targa</th><th>Prezzo €</th><th>Venditore</th><th>PDF</th><th>Azioni</th>
         </tr></thead>
         <tbody id="tbody-registro">
-          <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--testo-sec);">Caricamento...</td></tr>
+          <tr><td colspan="10" style="text-align:center;padding:40px;color:var(--testo-sec);">Caricamento...</td></tr>
         </tbody>
       </table>
     </div>
@@ -1275,6 +1292,34 @@ async function salvaEGeneraDocumento() {
   const dati = raccogliDati();
   const err = validaDati(dati);
   if (err) { mostraStato('❌ ' + err, 'errore'); return; }
+
+  // MODALITÀ MODIFICA: aggiorna documento esistente mantenendo il numero
+  if (modalitaModifica) {
+    dati.numDoc = modalitaModifica;
+    mostraStato('⏳ Salvataggio modifiche...', 'normale');
+    document.getElementById('btn-salva-genera').disabled = true;
+    try {
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'aggiornaDoc', dati })
+      });
+      const result = await res.json();
+      if (result.url) {
+        mostraStato('✅ Modifiche salvate su ' + result.numDoc, 'successo');
+        window.open(result.url, '_blank');
+        annullaModifica();
+        mostraTab('registro');
+      } else {
+        mostraStato('❌ ' + (result.errore || 'Errore'), 'errore');
+      }
+    } catch(e) {
+      mostraStato('❌ Errore di connessione', 'errore');
+    }
+    document.getElementById('btn-salva-genera').disabled = false;
+    return;
+  }
+
+  // MODALITÀ NUOVO
   mostraStato('⏳ Salvataggio e generazione...', 'normale');
   document.getElementById('btn-salva-genera').disabled = true;
   try {
@@ -1287,7 +1332,6 @@ async function salvaEGeneraDocumento() {
       mostraStato('✅ Salvato come ' + result.numDoc + ' – PDF generato!', 'successo');
       window.open(result.url, '_blank');
       document.getElementById('num-doc').textContent = result.numDoc;
-      // Ricarica numero per il prossimo documento
       setTimeout(caricaProssimoNumero, 1500);
     } else {
       mostraStato('❌ ' + (result.errore || 'Errore'), 'errore');
@@ -1296,6 +1340,139 @@ async function salvaEGeneraDocumento() {
     mostraStato('❌ Errore di connessione', 'errore');
   }
   document.getElementById('btn-salva-genera').disabled = false;
+}
+
+// ============================================================
+// MODIFICA / ELIMINA DOCUMENTI
+// ============================================================
+let modalitaModifica = null;
+
+async function modificaDocumento(numDoc) {
+  mostraStato('⏳ Caricamento documento...', 'normale');
+  try {
+    const res = await fetch(APPS_SCRIPT_URL + '?action=getDettaglio&numDoc=' + encodeURIComponent(numDoc));
+    const data = await res.json();
+    if (!data.trovato) {
+      mostraStato('❌ ' + (data.errore || 'Documento non recuperabile'), 'errore');
+      return;
+    }
+    popolaForm(data.dati);
+    modalitaModifica = numDoc;
+    document.getElementById('modifica-banner').style.display = 'flex';
+    document.getElementById('modifica-num').textContent = numDoc;
+    document.getElementById('num-doc').textContent = numDoc;
+    document.getElementById('btn-salva-genera').innerHTML = '💾 Salva modifiche';
+    mostraTab('nuovo');
+    window.scrollTo(0,0);
+    mostraStato('✅ Documento caricato – modifica e salva', 'successo');
+  } catch(e) {
+    mostraStato('❌ Errore di connessione', 'errore');
+  }
+}
+
+async function eliminaDocumento(numDoc, cliente) {
+  if (!confirm('Eliminare il documento ' + numDoc + (cliente ? ' (' + cliente + ')' : '') +
+    '?\n\nLa riga verrà rimossa dal registro e il PDF spostato nel cestino di Drive (recuperabile per 30 giorni).')) return;
+  mostraStato('⏳ Eliminazione...', 'normale');
+  try {
+    const res = await fetch(APPS_SCRIPT_URL + '?action=eliminaDoc&numDoc=' + encodeURIComponent(numDoc));
+    const data = await res.json();
+    if (data.eliminato) {
+      mostraStato('✅ Documento ' + numDoc + ' eliminato', 'successo');
+      caricaRegistro();
+    } else {
+      mostraStato('❌ ' + (data.errore || 'Eliminazione fallita'), 'errore');
+    }
+  } catch(e) {
+    mostraStato('❌ Errore di connessione', 'errore');
+  }
+}
+
+function annullaModifica() {
+  modalitaModifica = null;
+  document.getElementById('modifica-banner').style.display = 'none';
+  document.getElementById('btn-salva-genera').innerHTML = '✅ Salva & Genera PDF';
+  resetFormSilenzioso();
+  caricaProssimoNumero();
+}
+
+function resetFormSilenzioso() {
+  document.querySelectorAll('input[type=text], input[type=number], input[type=email], input[type=tel], input[type=date], input[type=month], textarea').forEach(el => el.value = '');
+  document.querySelectorAll('input[type=checkbox]').forEach(el => el.checked = false);
+  document.getElementById('permuta-campi').style.display = 'none';
+  document.getElementById('finanziamento-campi').style.display = 'none';
+  document.getElementById('veicolo-trovato-box').style.display = 'none';
+  document.getElementById('cliente-trovato-bar').style.display = 'none';
+  setTipoGaranzia('legale');
+  document.querySelectorAll('.pills').forEach(g => g.querySelectorAll('.pill').forEach((p,i)=>p.classList.toggle('active',i===0)));
+  document.getElementById('tipo-veicolo').value = 'Usato';
+  document.getElementById('tipo-acquisto').value = 'privato';
+  document.getElementById('regime-iva').value = 'margine';
+  document.getElementById('data-doc').value = new Date().toISOString().split('T')[0];
+  calcolaRiepilogo(); aggiornaRiepilogoCliente(); aggiornaRiepilogoVeicolo();
+}
+
+function popolaForm(d) {
+  resetFormSilenzioso();
+  setTipo(d.tipo || 'preventivo');
+  if (d.dataDoc) document.getElementById('data-doc').value = d.dataDoc;
+  if (d.venditore) document.getElementById('venditore').value = d.venditore;
+  if (d.tipoAcquisto) document.getElementById('tipo-acquisto').value = d.tipoAcquisto;
+
+  const c = d.cliente || {};
+  const set = (id,val) => { const el=document.getElementById(id); if(el) el.value = val||''; };
+  set('cliente-cf', c.cf); set('cliente-piva', c.piva); set('cliente-pec', c.pec); set('cliente-sdi', c.sdi);
+  set('cliente-nome', c.nome); set('cliente-nascita', c.nascita); set('cliente-nato-a', c.natoA);
+  set('cliente-nato-prov', c.natoProv); set('cliente-tel', c.tel); set('cliente-cell', c.cell);
+  set('cliente-email', c.email); set('cliente-residenza', c.residenza); set('cliente-res-prov', c.resProv);
+  set('cliente-via', c.via); set('cliente-cap', c.cap);
+
+  const v = d.veicolo || {};
+  set('v-marcamodello', v.marcaModello); set('v-km', v.km); set('v-immat', v.immat);
+  set('v-colore', v.colore); set('v-targa', v.targa); set('v-telaio', v.telaio); set('v-note', v.note);
+  if (v.tipo) {
+    document.getElementById('tipo-veicolo').value = v.tipo;
+    document.querySelectorAll('#sez-veicolo .pills .pill').forEach(p =>
+      p.classList.toggle('active', p.textContent.trim() === v.tipo));
+  }
+
+  if (d.permuta) {
+    document.getElementById('permuta-toggle').checked = true;
+    document.getElementById('permuta-campi').style.display = 'block';
+    const p = d.permuta;
+    set('p-marca',p.marca); set('p-modello',p.modello); set('p-targa',p.targa); set('p-telaio',p.telaio);
+    set('p-immat',p.immat); set('p-colore',p.colore); set('p-km',p.km); set('p-valore',p.valore);
+    if (p.proprietario) document.getElementById('p-proprietario').value = p.proprietario;
+    set('p-proprietario-nome', p.proprietarioNome);
+  }
+
+  const g = d.garanzia || {tipo:'legale'};
+  setTipoGaranzia(g.tipo || 'legale');
+  if (g.tipo === 'mapfre') {
+    if (g.mesi) document.getElementById('mapfre-mesi').value = g.mesi;
+    if (g.prezzo) document.getElementById('mapfre-prezzo').value = g.prezzo;
+    aggiornaRiepGaranzia();
+  }
+  set('garanzia-note', d.garanziaNote);
+
+  const e = d.economico || {};
+  set('prezzo-vendita', e.prezzoVendita); set('passaggio-prop', e.passaggioProp);
+  set('caparra', e.caparra); set('imp-finanziato', e.impFinanziato);
+  if (e.tipoPagamento) document.getElementById('tipo-pagamento').value = e.tipoPagamento;
+  if (e.regimeIva) document.getElementById('regime-iva').value = e.regimeIva;
+  if (e.consegnaTesto) {
+    const m = e.consegnaTesto.match(/(\d+)/);
+    document.getElementById('consegna-giorni').value =
+      e.consegnaTesto.indexOf('definire') !== -1 ? 'da_definire' : (m ? m[1] : '7');
+  }
+  if (e.finSpese || e.finRate || e.finRata || e.finTan) {
+    document.getElementById('finanziamento-toggle').checked = true;
+    document.getElementById('finanziamento-campi').style.display = 'grid';
+    set('fin-spese',e.finSpese); set('fin-rate',e.finRate); set('fin-rata',e.finRata); set('fin-tan',e.finTan);
+  }
+  set('note-extra', d.noteExtra);
+
+  calcolaRiepilogo(); aggiornaRiepilogoCliente(); aggiornaRiepilogoVeicolo();
 }
 
 // ============================================================
@@ -1309,7 +1486,7 @@ async function caricaRegistro() {
     const data = await res.json();
     if (!data.righe || data.righe.length === 0) {
       document.getElementById('tbody-registro').innerHTML =
-        '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--testo-sec);">Nessun documento registrato</td></tr>';
+        '<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--testo-sec);">Nessun documento registrato</td></tr>';
       return;
     }
     document.getElementById('tbody-registro').innerHTML = data.righe.map(r => `
@@ -1323,10 +1500,14 @@ async function caricaRegistro() {
         <td>€ ${parseFloat(r.prezzo||0).toLocaleString('it-IT')}</td>
         <td>${r.venditore||'–'}</td>
         <td>${r.urlPdf ? `<a class="link-pdf" href="${r.urlPdf}" target="_blank">📄 Apri</a>` : '–'}</td>
+        <td style="white-space:nowrap;">
+          <button class="btn-azione btn-modifica" onclick="modificaDocumento('${r.numDoc}')" title="Modifica">✏️</button>
+          <button class="btn-azione btn-elimina" onclick="eliminaDocumento('${r.numDoc}','${(r.cliente||'').replace(/'/g,"")}')" title="Elimina">🗑️</button>
+        </td>
       </tr>`).join('');
   } catch(e) {
     document.getElementById('tbody-registro').innerHTML =
-      '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--rosso);">Errore caricamento dati</td></tr>';
+      '<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--rosso);">Errore caricamento dati</td></tr>';
   }
 }
 
@@ -1343,23 +1524,12 @@ function mostraStato(msg, tipo) {
 
 function resetForm() {
   if (!confirm('Cancellare tutti i dati inseriti?')) return;
-  document.querySelectorAll('input[type=text], input[type=number], input[type=email], input[type=tel], input[type=date], input[type=month], textarea').forEach(el => el.value = '');
-  document.querySelectorAll('input[type=checkbox]').forEach(el => el.checked = false);
-  document.getElementById('permuta-campi').style.display = 'none';
-  document.getElementById('finanziamento-campi').style.display = 'none';
-  document.getElementById('veicolo-trovato-box').style.display = 'none';
-  document.getElementById('cliente-trovato-bar').style.display = 'none';
-  setTipoGaranzia('legale');
-  // Reset di ogni gruppo pill: attiva il primo di ciascun gruppo
-  document.querySelectorAll('.pills').forEach(gruppo => {
-    gruppo.querySelectorAll('.pill').forEach((p,i) => p.classList.toggle('active', i===0));
-  });
-  document.getElementById('tipo-veicolo').value = 'Usato';
-  document.getElementById('tipo-acquisto').value = 'privato';
-  document.getElementById('regime-iva').value = 'margine';
-  document.getElementById('data-doc').value = new Date().toISOString().split('T')[0];
-  calcolaRiepilogo();
-  aggiornaRiepilogoCliente(); aggiornaRiepilogoVeicolo();
+  if (modalitaModifica) {
+    modalitaModifica = null;
+    document.getElementById('modifica-banner').style.display = 'none';
+    document.getElementById('btn-salva-genera').innerHTML = '✅ Salva & Genera PDF';
+  }
+  resetFormSilenzioso();
   caricaProssimoNumero();
   mostraStato('Form azzerato', 'successo');
 }
