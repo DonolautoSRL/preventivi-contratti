@@ -377,9 +377,13 @@
       <label>Data</label>
       <input type="date" id="data-doc">
     </div>
-    <div class="campo" style="flex:1;max-width:220px;">
+    <div class="campo" style="flex:1;max-width:240px;">
       <label>Venditore</label>
-      <input type="text" id="venditore" placeholder="Nome venditore">
+      <select id="venditore">
+        <option value="">— Seleziona —</option>
+        <option>MATTIA DONOLATO</option>
+        <option>ADELCHI DONOLATO</option>
+      </select>
     </div>
   </div>
 
@@ -468,8 +472,12 @@
           <input type="text" id="cliente-cap" placeholder="35020" maxlength="5">
         </div>
         <div class="campo">
-          <label>Codice univoco (CU/SDI/PEC)</label>
-          <input type="text" id="cliente-cu" placeholder="SDI o PEC">
+          <label>PEC</label>
+          <input type="email" id="cliente-pec" placeholder="cliente@pec.it">
+        </div>
+        <div class="campo">
+          <label>Codice destinatario SDI</label>
+          <input type="text" id="cliente-sdi" placeholder="0000000" maxlength="7" style="text-transform:uppercase;">
         </div>
       </div>
     </div>
@@ -1059,7 +1067,8 @@ async function processaCF() {
       setIfEmpty('cliente-via', data.via);
       setIfEmpty('cliente-cap', data.cap);
       setIfEmpty('cliente-piva', data.piva);
-      setIfEmpty('cliente-cu', data.cu);
+      setIfEmpty('cliente-pec', data.pec);
+      setIfEmpty('cliente-sdi', data.sdi);
       aggiornaRiepilogoCliente();
 
       bar.className = 'cliente-trovato-bar success';
@@ -1152,7 +1161,8 @@ function raccogliDati() {
       cap: document.getElementById('cliente-cap').value,
       cf: document.getElementById('cliente-cf').value.toUpperCase(),
       piva: document.getElementById('cliente-piva').value,
-      cu: document.getElementById('cliente-cu').value,
+      pec: document.getElementById('cliente-pec').value,
+      sdi: document.getElementById('cliente-sdi').value.toUpperCase(),
     },
     veicolo: {
       tipo: document.getElementById('tipo-veicolo').value,
