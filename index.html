@@ -298,6 +298,12 @@
   .btn-converti:hover { background: #e8f5ee; }
   .btn-elimina:hover { background: #fde8e8; }
   .btn-converti { font-size: 13px; }
+  .btn-upload-fattura {
+    padding: 5px 12px; background: var(--blu); color: white; border: none;
+    border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer;
+    transition: background .15s; white-space: nowrap;
+  }
+  .btn-upload-fattura:hover { background: var(--blu-chiaro); }
   .modifica-banner {
     background: #fff8e1; border: 1.5px solid #f4c430; border-radius: 8px;
     padding: 10px 16px; margin-bottom: 16px; font-size: 13px; color: #7c5a10;
@@ -866,10 +872,10 @@
       <table id="tabella-registro">
         <thead><tr>
           <th>N° Doc.</th><th>Data</th><th>Tipo</th><th>Cliente</th>
-          <th>Veicolo</th><th>Targa</th><th>Prezzo €</th><th>Venditore</th><th>PDF</th><th>Azioni</th>
+          <th>Veicolo</th><th>Targa</th><th>Prezzo €</th><th>Venditore</th><th>PDF</th><th>Fattura</th><th>Azioni</th>
         </tr></thead>
         <tbody id="tbody-registro">
-          <tr><td colspan="10" style="text-align:center;padding:40px;color:var(--testo-sec);">Caricamento...</td></tr>
+          <tr><td colspan="11" style="text-align:center;padding:40px;color:var(--testo-sec);">Caricamento...</td></tr>
         </tbody>
       </table>
     </div>
@@ -1373,6 +1379,74 @@ async function salvaEGeneraDocumento() {
 }
 
 // ============================================================
+// FATTURE – upload ed eliminazione
+// ============================================================
+function caricaFattura(numDoc) {
+  // Crea un input file al volo
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/pdf,image/*';
+  input.onchange = async () => {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      mostraStato('❌ File troppo grande (max 10 MB)', 'errore');
+      return;
+    }
+    mostraStato('⏳ Caricamento fattura ' + numDoc + '...', 'normale');
+    try {
+      // Converto in base64
+      const base64 = await new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = () => res(reader.result.split(',')[1]);
+        reader.onerror = rej;
+        reader.readAsDataURL(file);
+      });
+      const r = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'caricaFattura',
+          numDoc: numDoc,
+          fileBase64: base64,
+          fileName: file.name,
+          mimeType: file.type
+        })
+      });
+      const data = await r.json();
+      if (data.ok) {
+        mostraStato('✅ Fattura caricata per ' + numDoc, 'successo');
+        caricaRegistro();
+      } else {
+        mostraStato('❌ ' + (data.errore || 'Caricamento fallito'), 'errore');
+      }
+    } catch(e) {
+      mostraStato('❌ Errore durante il caricamento', 'errore');
+    }
+  };
+  input.click();
+}
+
+async function eliminaFattura(numDoc) {
+  if (!confirm('Rimuovere la fattura del documento ' + numDoc + '?\n\nIl file verrà spostato nel cestino di Drive (recuperabile 30 giorni).')) return;
+  mostraStato('⏳ Rimozione fattura...', 'normale');
+  try {
+    const r = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'eliminaFattura', numDoc: numDoc })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      mostraStato('✅ Fattura rimossa', 'successo');
+      caricaRegistro();
+    } else {
+      mostraStato('❌ ' + (data.errore || 'Rimozione fallita'), 'errore');
+    }
+  } catch(e) {
+    mostraStato('❌ Errore di connessione', 'errore');
+  }
+}
+
+// ============================================================
 // MODIFICA / ELIMINA DOCUMENTI
 // ============================================================
 let modalitaModifica = null;
@@ -1575,7 +1649,7 @@ let registroCompleto = []; // cache per i filtri
 
 async function caricaRegistro() {
   document.getElementById('tbody-registro').innerHTML =
-    '<tr><td colspan="10" style="text-align:center;padding:30px;">Caricamento...</td></tr>';
+    '<tr><td colspan="11" style="text-align:center;padding:30px;">Caricamento...</td></tr>';
   try {
     const res = await fetch(APPS_SCRIPT_URL + '?action=getRegistro');
     const data = await res.json();
@@ -1584,7 +1658,7 @@ async function caricaRegistro() {
     applicaFiltri();
   } catch(e) {
     document.getElementById('tbody-registro').innerHTML =
-      '<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--rosso);">Errore caricamento dati</td></tr>';
+      '<tr><td colspan="11" style="text-align:center;padding:30px;color:var(--rosso);">Errore caricamento dati</td></tr>';
   }
 }
 
@@ -1628,7 +1702,7 @@ function applicaFiltri() {
 
   if (filtrati.length === 0) {
     document.getElementById('tbody-registro').innerHTML =
-      '<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--testo-sec);">Nessun documento corrisponde ai filtri</td></tr>';
+      '<tr><td colspan="11" style="text-align:center;padding:40px;color:var(--testo-sec);">Nessun documento corrisponde ai filtri</td></tr>';
     return;
   }
 
@@ -1643,6 +1717,12 @@ function applicaFiltri() {
         <td>€ ${parseFloat(r.prezzo||0).toLocaleString('it-IT')}</td>
         <td>${r.venditore||'–'}</td>
         <td>${r.urlPdf ? `<a class="link-pdf" href="${r.urlPdf}" target="_blank">📄 Apri</a>` : '–'}</td>
+        <td style="white-space:nowrap;">
+          ${r.urlFattura
+            ? `<a class="badge badge-ok" href="${r.urlFattura}" target="_blank" style="text-decoration:none;">✅ Caricata</a>
+               <button class="btn-azione" onclick="eliminaFattura('${r.numDoc}')" title="Rimuovi fattura" style="font-size:13px;">✖️</button>`
+            : `<button class="btn-upload-fattura" onclick="caricaFattura('${r.numDoc}')">📎 Carica</button>`}
+        </td>
         <td style="white-space:nowrap;">
           <button class="btn-azione btn-modifica" onclick="modificaDocumento('${r.numDoc}')" title="Modifica">✏️</button>
           <button class="btn-azione btn-email" onclick="inviaEmailDoc('${r.numDoc}','${(r.email||'').replace(/'/g,"")}')" title="Invia via email">✉️</button>
