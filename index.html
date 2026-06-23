@@ -714,7 +714,7 @@
         </div>
         <div class="campo">
           <label>Importo finanziato €</label>
-          <input type="number" id="imp-finanziato" placeholder="0">
+          <input type="number" id="imp-finanziato" placeholder="0" oninput="calcolaRiepilogo()">
         </div>
       </div>
 
@@ -776,19 +776,31 @@
           <span class="valore" id="r-prezzo">€ –</span>
         </div>
         <div class="riepilogo-riga">
-          <span class="label">– Permuta</span>
-          <span class="valore neg" id="r-permuta">€ 0</span>
+          <span class="label">+ Accessori / Garanzia</span>
+          <span class="valore" id="r-garanzia">€ 0</span>
         </div>
         <div class="riepilogo-riga">
           <span class="label">+ Passaggio proprietà</span>
           <span class="valore" id="r-passaggio">€ 0</span>
         </div>
         <div class="riepilogo-riga">
-          <span class="label">+ Premio garanzia Mapfre</span>
-          <span class="valore" id="r-garanzia">€ 0</span>
+          <span class="label">– Permuta</span>
+          <span class="valore neg" id="r-permuta">€ 0</span>
+        </div>
+        <div class="riepilogo-riga totale" style="font-size:16px;">
+          <span>Totale residuo</span>
+          <span id="r-totale-residuo">€ –</span>
+        </div>
+        <div class="riepilogo-riga" id="riga-finanziato" style="display:none;">
+          <span class="label">– Importo finanziato</span>
+          <span class="valore neg" id="r-finanziato">€ 0</span>
+        </div>
+        <div class="riepilogo-riga" id="riga-anticipo" style="display:none;">
+          <span class="label" style="font-weight:700;">Anticipo dovuto</span>
+          <span class="valore" id="r-anticipo" style="font-weight:700;">€ 0</span>
         </div>
         <div class="riepilogo-riga">
-          <span class="label">– Caparra versata</span>
+          <span class="label" id="lbl-caparra">– Caparra versata</span>
           <span class="valore neg" id="r-caparra">€ 0</span>
         </div>
         <div class="riepilogo-riga totale">
@@ -1047,17 +1059,38 @@ function calcolaRiepilogo() {
     ? parseFloat(document.getElementById('p-valore').value)||0 : 0;
   const passaggio = parseFloat(document.getElementById('passaggio-prop').value)||0;
   const caparra = parseFloat(document.getElementById('caparra').value)||0;
+  const finanziato = parseFloat(document.getElementById('imp-finanziato').value)||0;
   const garanziaP = tipoGaranzia === 'mapfre'
     ? parseFloat(document.getElementById('mapfre-prezzo').value)||0 : 0;
-  const saldo = prezzo - permuta + passaggio + garanziaP - caparra;
+
+  const totaleResiduo = prezzo + garanziaP + passaggio - permuta;
+  const anticipoDovuto = totaleResiduo - finanziato;
+  const saldo = anticipoDovuto - caparra;
 
   const fmt = v => '€ ' + v.toLocaleString('it-IT', {minimumFractionDigits:0});
   document.getElementById('r-prezzo').textContent = prezzo ? fmt(prezzo) : '€ –';
-  document.getElementById('r-permuta').textContent = fmt(permuta);
-  document.getElementById('r-passaggio').textContent = fmt(passaggio);
   document.getElementById('r-garanzia').textContent = fmt(garanziaP);
+  document.getElementById('r-passaggio').textContent = fmt(passaggio);
+  document.getElementById('r-permuta').textContent = fmt(permuta);
+  document.getElementById('r-totale-residuo').textContent = prezzo ? fmt(totaleResiduo) : '€ –';
   document.getElementById('r-caparra').textContent = fmt(caparra);
   document.getElementById('r-saldo').textContent = prezzo ? fmt(saldo) : '€ –';
+
+  // Mostra finanziamento/anticipo solo se c'è un importo finanziato
+  const rigaFin = document.getElementById('riga-finanziato');
+  const rigaAnt = document.getElementById('riga-anticipo');
+  const lblCaparra = document.getElementById('lbl-caparra');
+  if (finanziato > 0) {
+    rigaFin.style.display = 'flex';
+    rigaAnt.style.display = 'flex';
+    document.getElementById('r-finanziato').textContent = fmt(finanziato);
+    document.getElementById('r-anticipo').textContent = fmt(anticipoDovuto);
+    lblCaparra.textContent = '– di cui caparra già versata';
+  } else {
+    rigaFin.style.display = 'none';
+    rigaAnt.style.display = 'none';
+    lblCaparra.textContent = '– Caparra versata';
+  }
   document.getElementById('riepilogo-prezzo').textContent = prezzo ? fmt(prezzo) : 'da compilare';
 }
 
