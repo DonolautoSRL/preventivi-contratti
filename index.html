@@ -705,6 +705,28 @@
           <input type="number" id="prezzo-vendita" placeholder="0" oninput="calcolaRiepilogo()">
         </div>
         <div class="campo">
+          <label>Sconto</label>
+          <div style="display:flex;gap:6px;">
+            <input type="number" id="sconto-valore" placeholder="0" oninput="calcolaRiepilogo()" style="flex:1;">
+            <select id="sconto-tipo" onchange="calcolaRiepilogo()" style="width:80px;">
+              <option value="euro">€</option>
+              <option value="perc">%</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACCESSORI -->
+      <div style="margin-top:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <label style="font-size:12px;font-weight:600;color:var(--testo-sec);text-transform:uppercase;letter-spacing:.4px;">Accessori / Servizi aggiuntivi</label>
+          <button type="button" onclick="aggiungiAccessorio()" style="padding:5px 12px;background:var(--blu);color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">+ Aggiungi riga</button>
+        </div>
+        <div id="accessori-lista"></div>
+      </div>
+
+      <div class="grid grid-2" style="margin-top:14px;">
+        <div class="campo">
           <label>Passaggio proprietà / immatricolazione €</label>
           <input type="number" id="passaggio-prop" placeholder="0" oninput="calcolaRiepilogo()">
         </div>
@@ -756,12 +778,12 @@
         <div class="campo">
           <label>Previsione di consegna (dal saldo)</label>
           <select id="consegna-giorni">
-            <option value="7">Entro 7 giorni dal saldo</option>
-            <option value="15">Entro 15 giorni dal saldo</option>
-            <option value="20">Entro 20 giorni dal saldo</option>
-            <option value="30">Entro 30 giorni dal saldo</option>
-            <option value="45">Entro 45 giorni dal saldo</option>
-            <option value="60">Entro 60 giorni dal saldo</option>
+            <option value="7">Circa 7 giorni dal saldo</option>
+            <option value="15">Circa 15 giorni dal saldo</option>
+            <option value="20">Circa 20 giorni dal saldo</option>
+            <option value="30">Circa 30 giorni dal saldo</option>
+            <option value="45">Circa 45 giorni dal saldo</option>
+            <option value="60">Circa 60 giorni dal saldo</option>
             <option value="da_definire">Da definire</option>
           </select>
         </div>
@@ -775,8 +797,16 @@
           <span class="label">Prezzo vendita</span>
           <span class="valore" id="r-prezzo">€ –</span>
         </div>
+        <div class="riepilogo-riga" id="riga-sconto" style="display:none;">
+          <span class="label">– Sconto</span>
+          <span class="valore neg" id="r-sconto">€ 0</span>
+        </div>
+        <div class="riepilogo-riga" id="riga-accessori" style="display:none;">
+          <span class="label">+ Accessori</span>
+          <span class="valore" id="r-accessori">€ 0</span>
+        </div>
         <div class="riepilogo-riga">
-          <span class="label">+ Accessori / Garanzia</span>
+          <span class="label">+ Premio garanzia Mapfre</span>
           <span class="valore" id="r-garanzia">€ 0</span>
         </div>
         <div class="riepilogo-riga">
@@ -1051,10 +1081,58 @@ function aggiornaRiepilogoVeicolo() {
 }
 
 // ============================================================
+// ACCESSORI
+// ============================================================
+let contatoreAccessori = 0;
+
+function aggiungiAccessorio(desc, importo) {
+  contatoreAccessori++;
+  const id = contatoreAccessori;
+  const div = document.createElement('div');
+  div.className = 'accessorio-riga';
+  div.id = 'acc-' + id;
+  div.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;align-items:center;';
+  div.innerHTML =
+    '<input type="text" placeholder="Descrizione accessorio (es. Set gomme invernali)" ' +
+      'class="acc-desc" value="' + (desc ? String(desc).replace(/"/g,'&quot;') : '') + '" ' +
+      'style="flex:1;padding:9px 12px;border:1.5px solid var(--grigio-bordo);border-radius:7px;font-size:14px;outline:none;">' +
+    '<input type="number" placeholder="€" class="acc-importo" value="' + (importo||'') + '" ' +
+      'oninput="calcolaRiepilogo()" ' +
+      'style="width:120px;padding:9px 12px;border:1.5px solid var(--grigio-bordo);border-radius:7px;font-size:14px;outline:none;">' +
+    '<button type="button" onclick="rimuoviAccessorio(' + id + ')" ' +
+      'style="border:none;background:#fde8e8;color:var(--rosso);border-radius:6px;padding:8px 11px;cursor:pointer;font-size:14px;">✖️</button>';
+  document.getElementById('accessori-lista').appendChild(div);
+}
+
+function rimuoviAccessorio(id) {
+  const el = document.getElementById('acc-' + id);
+  if (el) el.remove();
+  calcolaRiepilogo();
+}
+
+function raccogliAccessori() {
+  const righe = [];
+  document.querySelectorAll('#accessori-lista .accessorio-riga').forEach(r => {
+    const desc = r.querySelector('.acc-desc').value.trim();
+    const imp = parseFloat(r.querySelector('.acc-importo').value) || 0;
+    if (desc || imp) righe.push({ desc, importo: imp });
+  });
+  return righe;
+}
+
+function totaleAccessori() {
+  return raccogliAccessori().reduce((s, a) => s + (a.importo || 0), 0);
+}
+
+// ============================================================
 // RIEPILOGO
 // ============================================================
 function calcolaRiepilogo() {
   const prezzo = parseFloat(document.getElementById('prezzo-vendita').value)||0;
+  const scontoVal = parseFloat(document.getElementById('sconto-valore').value)||0;
+  const scontoTipo = document.getElementById('sconto-tipo').value;
+  const scontoEuro = scontoTipo === 'perc' ? prezzo * scontoVal / 100 : scontoVal;
+  const accessori = totaleAccessori();
   const permuta = document.getElementById('permuta-toggle').checked
     ? parseFloat(document.getElementById('p-valore').value)||0 : 0;
   const passaggio = parseFloat(document.getElementById('passaggio-prop').value)||0;
@@ -1063,7 +1141,7 @@ function calcolaRiepilogo() {
   const garanziaP = tipoGaranzia === 'mapfre'
     ? parseFloat(document.getElementById('mapfre-prezzo').value)||0 : 0;
 
-  const totaleResiduo = prezzo + garanziaP + passaggio - permuta;
+  const totaleResiduo = prezzo - scontoEuro + accessori + garanziaP + passaggio - permuta;
   const anticipoDovuto = totaleResiduo - finanziato;
   const saldo = anticipoDovuto - caparra;
 
@@ -1076,7 +1154,22 @@ function calcolaRiepilogo() {
   document.getElementById('r-caparra').textContent = fmt(caparra);
   document.getElementById('r-saldo').textContent = prezzo ? fmt(saldo) : '€ –';
 
-  // Mostra finanziamento/anticipo solo se c'è un importo finanziato
+  // Sconto
+  const rigaSconto = document.getElementById('riga-sconto');
+  if (scontoEuro > 0) {
+    rigaSconto.style.display = 'flex';
+    document.getElementById('r-sconto').textContent = fmt(scontoEuro) +
+      (scontoTipo === 'perc' ? ' (' + scontoVal + '%)' : '');
+  } else { rigaSconto.style.display = 'none'; }
+
+  // Accessori
+  const rigaAcc = document.getElementById('riga-accessori');
+  if (accessori > 0) {
+    rigaAcc.style.display = 'flex';
+    document.getElementById('r-accessori').textContent = fmt(accessori);
+  } else { rigaAcc.style.display = 'none'; }
+
+  // Finanziamento/anticipo
   const rigaFin = document.getElementById('riga-finanziato');
   const rigaAnt = document.getElementById('riga-anticipo');
   const lblCaparra = document.getElementById('lbl-caparra');
@@ -1228,7 +1321,7 @@ function raccogliDati() {
   const consegnaSel = document.getElementById('consegna-giorni').value;
   const consegnaTesto = consegnaSel === 'da_definire'
     ? 'Da definire'
-    : 'Entro ' + consegnaSel + ' giorni dal saldo';
+    : 'Circa ' + consegnaSel + ' giorni dal saldo';
 
   return {
     tipo: tipoDocumento,
@@ -1279,6 +1372,9 @@ function raccogliDati() {
     garanziaNote: document.getElementById('garanzia-note') ? document.getElementById('garanzia-note').value : '',
     economico: {
       prezzoVendita: document.getElementById('prezzo-vendita').value,
+      scontoValore: document.getElementById('sconto-valore').value,
+      scontoTipo: document.getElementById('sconto-tipo').value,
+      accessori: raccogliAccessori(),
       passaggioProp: document.getElementById('passaggio-prop').value,
       caparra: document.getElementById('caparra').value,
       impFinanziato: document.getElementById('imp-finanziato').value,
@@ -1608,6 +1704,8 @@ function resetFormSilenzioso() {
   document.getElementById('tipo-veicolo').value = 'Usato';
   document.getElementById('tipo-acquisto').value = 'privato';
   document.getElementById('regime-iva').value = 'margine';
+  document.getElementById('sconto-tipo').value = 'euro';
+  document.getElementById('accessori-lista').innerHTML = '';
   document.getElementById('data-doc').value = new Date().toISOString().split('T')[0];
   calcolaRiepilogo(); aggiornaRiepilogoCliente(); aggiornaRiepilogoVeicolo();
 }
@@ -1657,6 +1755,13 @@ function popolaForm(d) {
 
   const e = d.economico || {};
   set('prezzo-vendita', e.prezzoVendita); set('passaggio-prop', e.passaggioProp);
+  set('sconto-valore', e.scontoValore);
+  if (e.scontoTipo) document.getElementById('sconto-tipo').value = e.scontoTipo;
+  // Ricarica accessori
+  document.getElementById('accessori-lista').innerHTML = '';
+  if (e.accessori && e.accessori.length) {
+    e.accessori.forEach(a => aggiungiAccessorio(a.desc, a.importo));
+  }
   set('caparra', e.caparra); set('imp-finanziato', e.impFinanziato);
   if (e.tipoPagamento) document.getElementById('tipo-pagamento').value = e.tipoPagamento;
   if (e.regimeIva) document.getElementById('regime-iva').value = e.regimeIva;
