@@ -1292,9 +1292,14 @@ async function cercaVeicolo() {
       document.getElementById('v-marcamodello').value = data.marcaModello || '';
       document.getElementById('v-km').value = data.km || '';
       if (data.immat) document.getElementById('v-immat').value = data.immat;
+      // Regime IVA automatico dall'inventario (colonna R)
+      if (data.regimeIva) {
+        document.getElementById('regime-iva').value = data.regimeIva;
+      }
       document.getElementById('vt-nome').textContent = data.marcaModello || '–';
       document.getElementById('vt-dettagli').textContent =
-        [data.km ? data.km+' km' : '', data.targa, data.telaio].filter(Boolean).join(' · ');
+        [data.km ? data.km+' km' : '', data.targa, data.telaio,
+         data.regimeIva === 'esposta' ? 'IVA esposta 22%' : 'IVA a margine'].filter(Boolean).join(' · ');
       document.getElementById('veicolo-trovato-box').style.display = 'block';
       aggiornaRiepilogoVeicolo(); calcolaRiepilogo();
       mostraStato('✅ Veicolo trovato e caricato', 'successo');
