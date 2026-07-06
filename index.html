@@ -1295,6 +1295,7 @@ async function cercaVeicolo() {
       // Regime IVA automatico dall'inventario (colonna R)
       if (data.regimeIva) {
         document.getElementById('regime-iva').value = data.regimeIva;
+        if (data.ivaDebug) console.log('Regime IVA dal foglio →', data.regimeIva, '|', data.ivaDebug);
       }
       document.getElementById('vt-nome').textContent = data.marcaModello || '–';
       document.getElementById('vt-dettagli').textContent =
@@ -1302,7 +1303,7 @@ async function cercaVeicolo() {
          data.regimeIva === 'esposta' ? 'IVA esposta 22%' : 'IVA a margine'].filter(Boolean).join(' · ');
       document.getElementById('veicolo-trovato-box').style.display = 'block';
       aggiornaRiepilogoVeicolo(); calcolaRiepilogo();
-      mostraStato('✅ Veicolo trovato e caricato', 'successo');
+      mostraStato('✅ Veicolo trovato – ' + (data.regimeIva === 'esposta' ? 'IVA esposta 22%' : (data.regimeIva === 'margine' ? 'IVA a margine' : 'regime IVA non letto (aggiorna il deployment!)')), 'successo');
     } else {
       let msg = '⚠️ Non trovato in inventario.';
       if (data.debug) {
