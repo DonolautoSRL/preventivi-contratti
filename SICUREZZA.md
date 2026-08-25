@@ -64,12 +64,21 @@ Copia il nuovo URL in `index.html`, al posto di `INCOLLA_QUI_IL_NUOVO_URL_APPS_S
 La cartella dei contratti è su "chiunque abbia il link". Portala su
 **"Con limitazioni"**. I link già circolati smettono di funzionare.
 
-### 5. Rendi privati i repository
+### 5. Valuta se rendere privati i repository — ma leggi prima
 
-Nessuno di questi cinque deve essere pubblico.
-Attenzione: renderli privati **non annulla** l'esposizione già avvenuta.
-Password e URL restano nella cronologia e potrebbero essere già stati copiati.
-È una misura in più, non un rimedio.
+Non farlo d'impulso: **su piano gratuito GitHub Pages non funziona da
+repository privati.** Rendere privati questi cinque significa mandare offline
+tutte e cinque le applicazioni, comprese le quattro che oggi girano bene.
+
+E soprattutto: renderli privati **non annulla** l'esposizione già avvenuta.
+Password e URL sono nella cronologia git e possono essere già stati copiati.
+La falla si chiude ai punti 1-3, non qui.
+
+Detto questo, il codice non ha motivo di stare in pubblico. Le due strade
+sensate sono passare a un piano a pagamento (Pages resta attivo anche da
+repository privati), oppure lasciarli pubblici assicurandosi che non
+contengano più nulla di segreto — che è la condizione in cui li ha portati
+questa correzione.
 
 ### 6. Valuta la notifica al Garante
 
