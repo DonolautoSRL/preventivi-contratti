@@ -6,8 +6,7 @@
  * codice del backend sia leggibile e versionato insieme al frontend.
  * Se modifichi la guardia nell'Apps Script, aggiorna anche questa copia.
  *
- * La password vera vive solo nell'Apps Script. Qui resta un segnaposto:
- * questo repository e' pubblico.
+ * La password vera vive solo nell'Apps Script. Qui resta un segnaposto.
  *
  * Come si aggancia al resto: in `Codice.gs` la prima riga dentro doGet
  * e doPost e'
@@ -20,13 +19,9 @@
 // ============================================================
 // AUTENTICAZIONE
 // ------------------------------------------------------------
-// Prima di questa guardia il backend rispondeva a chiunque
-// conoscesse l'URL: registro contratti, anagrafiche complete
-// (codice fiscale, residenza, contatti) e link ai PDF erano
-// scaricabili senza alcuna password.
-//
-// Ora ogni richiesta deve portare un token di sessione, che si
-// ottiene solo facendo login con la password qui sotto.
+// Ogni richiesta al backend deve portare un token di sessione,
+// che si ottiene solo facendo login con la password. Le richieste
+// senza token valido vengono rifiutate prima di toccare i dati.
 // ============================================================
 
 const PASSWORD_ACCESSO = 'SEGNAPOSTO-la-password-vera-sta-solo-in-Apps-Script';
