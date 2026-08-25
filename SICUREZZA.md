@@ -6,9 +6,9 @@ Il gestionale era accessibile a chiunque, senza password.
 
 Due cose si sommavano:
 
-1. **La password era scritta nel codice**, in un repository pubblico:
-   `const PIN_CORRETTO = '1974'`. Il controllo avveniva nel browser, quindi
-   bastava leggere il sorgente della pagina per conoscerla.
+1. **La password era scritta nel codice**, in un repository pubblico, come
+   `const PIN_CORRETTO = '...'` con il valore in chiaro. Il controllo avveniva
+   nel browser, quindi bastava leggere il sorgente della pagina per conoscerla.
 2. **Il backend non controllava nulla.** Anche senza password, chiamando
    direttamente l'URL dell'Apps Script si ottenevano i dati.
 
@@ -77,12 +77,24 @@ link erano stati distribuiti da un'API aperta. Vanno portati su
 **"Con limitazioni"**: finché restano così, i PDF sono scaricabili da chi si
 sia salvato un link, indipendentemente dall'autenticazione appena aggiunta.
 
-### Cambiare la password
+### Il codice di accesso è di 4 cifre: valutare 6
 
-La password attuale è stata generata durante la sessione di correzione ed è
-transitata da una chat. Funziona, ma conviene sostituirla: si modifica in
-`autenticazione.gs` e si rifà **Esegui il deployment > Gestisci deployment >
+Il codice attuale è numerico di 4 cifre, scelto per comodità. Non è quello
+vecchio finito nel repository, quindi non è più leggibile da nessuno — ma
+resta la categoria di password più facile da indovinare, perché chi attacca
+prova per prime le cifre che sembrano un anno: l'intervallo 1900-2030 sono
+circa 130 combinazioni.
+
+Per compensare, il freno sui tentativi è stretto: **5 tentativi ogni 30
+minuti**, cioè 10 all'ora. Un attacco mirato all'intervallo degli anni
+richiederebbe quindi una giornata buona di lavoro continuo, non minuti.
+
+Portarlo a 6 cifre non-data cambia l'ordine di grandezza: lo stesso attacco
+passa da ore ad anni. Si modifica solo la riga `PASSWORD_ACCESSO` in
+`autenticazione.gs`, poi **Esegui il deployment > Gestisci deployment >
 matita > Versione: Nuova versione**.
+
+Il codice non compare in questo repository e non deve mai comparirci.
 
 ### Controllare con chi sono condivisi gli Apps Script
 

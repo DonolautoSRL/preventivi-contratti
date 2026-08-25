@@ -32,8 +32,8 @@
 const PASSWORD_ACCESSO = 'SEGNAPOSTO-la-password-vera-sta-solo-in-Apps-Script';
 
 const DURATA_SESSIONE_SECONDI = 21600;
-const MAX_TENTATIVI_FALLITI = 10;
-const BLOCCO_SECONDI = 900;
+const MAX_TENTATIVI_FALLITI = 5;
+const BLOCCO_SECONDI = 1800;
 
 
 /**
