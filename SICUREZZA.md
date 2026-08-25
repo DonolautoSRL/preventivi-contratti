@@ -68,14 +68,31 @@ aggiungere sicurezza reale.
 
 Il segreto vero — la password — non è mai passato da GitHub.
 
+### PDF su Google Drive — chiuso
+
+Il codice creava ogni PDF con `setSharing(ANYONE_WITH_LINK)`: la condivisione
+era sui **singoli file**, non sulla cartella, quindi cambiare i permessi della
+cartella non sarebbe bastato.
+
+Sono state fatte due cose:
+
+1. **Rimosse le due chiamate `setSharing`** in `generaPDF` e `caricaFattura`.
+   I PDF nuovi nascono privati.
+2. **Bonificati i file esistenti** con `bonifica-drive.gs`: **77 file** resi
+   privati in 6 cartelle, nessun errore. Erano 77 e non 30 perché la cartella
+   contiene anche fatture e documenti non presenti a registro.
+
+Verificato dall'esterno: un link che prima restituiva il PDF ora restituisce
+una pagina di login Google.
+
+**I clienti non sono toccati**: `inviaEmailDocumento` allega il PDF all'email
+(`attachments: [pdfBlob]`), non manda un link a Drive.
+
+**Se un collega non riesce ad aprire un PDF dal registro**, è perché ora
+servono i permessi: va condivisa la cartella Drive con il suo account Google.
+È una configurazione da fare una volta.
+
 ## Cosa resta da fare
-
-### Chiudere i PDF su Google Drive
-
-La cartella dei contratti è condivisa come "chiunque abbia il link", e i 30
-link erano stati distribuiti da un'API aperta. Vanno portati su
-**"Con limitazioni"**: finché restano così, i PDF sono scaricabili da chi si
-sia salvato un link, indipendentemente dall'autenticazione appena aggiunta.
 
 ### Il codice di accesso è di 4 cifre: valutare 6
 
