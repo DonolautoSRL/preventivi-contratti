@@ -1,104 +1,98 @@
 /**
- * GUARDIA DI AUTENTICAZIONE — Donolauto
- * ---------------------------------------------------------------------------
- * Blocca ogni richiesta al backend che non porti un token valido.
+ * Copia di riferimento del file `autenticazione.gs` installato
+ * nell'Apps Script "Donolauto – Preventivi Backend".
  *
- * Il problema che risolve: le funzioni doGet/doPost rispondevano a chiunque
- * conoscesse l'URL della web app. L'URL era scritto in un repository pubblico,
- * quindi anagrafiche, codici fiscali e contratti erano scaricabili da chiunque.
+ * Questo file NON viene eseguito da GitHub: sta qui solo perche' il
+ * codice del backend sia leggibile e versionato insieme al frontend.
+ * Se modifichi la guardia nell'Apps Script, aggiorna anche questa copia.
  *
- * COME INSTALLARLO — 4 passaggi
+ * La password vera vive solo nell'Apps Script. Qui resta un segnaposto:
+ * questo repository e' pubblico.
  *
- *   1. Apri il progetto Apps Script collegato al foglio.
+ * Come si aggancia al resto: in `Codice.gs` la prima riga dentro doGet
+ * e doPost e'
  *
- *   2. Nel codice che hai gia', rinomina SOLO le due funzioni di ingresso:
+ *     const _bloccato = _verificaAccesso(e); if (_bloccato) return _bloccato;
  *
- *          function doGet(e)   { ...}   ->   function gestisciGet(e)  { ...}
- *          function doPost(e)  { ...}   ->   function gestisciPost(e) { ...}
- *
- *      Non serve toccare nient'altro: tutta la tua logica resta com'e'.
- *
- *   3. Aggiungi un file nuovo (+ > Script), chiamalo "autenticazione",
- *      incolla dentro questo contenuto e imposta PASSWORD qui sotto.
- *
- *   4. Distribuisci > Nuova distribuzione > Applicazione web
- *         - "Esegui come": Me stesso
- *         - "Chi ha accesso": Chiunque      <- serve, l'accesso lo controlliamo noi
- *      Copia il NUOVO URL nell'index.html, al posto del segnaposto.
- *
- *      Poi: Distribuzioni > quella VECCHIA > Archivia. L'URL vecchio e'
- *      bruciato, non va riutilizzato.
- * ---------------------------------------------------------------------------
+ * Bastano quelle due righe. Nessun'altra funzione e' stata toccata.
  */
 
-/** Password di accesso. Lunga e casuale: non un PIN di 4 cifre. */
-const PASSWORD = 'CAMBIAMI-metti-qui-una-password-lunga-e-casuale';
+// ============================================================
+// AUTENTICAZIONE
+// ------------------------------------------------------------
+// Prima di questa guardia il backend rispondeva a chiunque
+// conoscesse l'URL: registro contratti, anagrafiche complete
+// (codice fiscale, residenza, contatti) e link ai PDF erano
+// scaricabili senza alcuna password.
+//
+// Ora ogni richiesta deve portare un token di sessione, che si
+// ottiene solo facendo login con la password qui sotto.
+// ============================================================
 
-/** Durata della sessione. Massimo consentito da CacheService: 6 ore. */
+const PASSWORD_ACCESSO = 'SEGNAPOSTO-la-password-vera-sta-solo-in-Apps-Script';
+
 const DURATA_SESSIONE_SECONDI = 21600;
-
-/** Dopo quanti tentativi falliti il login si blocca, e per quanto. */
 const MAX_TENTATIVI_FALLITI = 10;
 const BLOCCO_SECONDI = 900;
 
 
-function doGet(e)  { return _conAutenticazione(e, gestisciGet); }
-function doPost(e) { return _conAutenticazione(e, gestisciPost); }
+/**
+ * Chiamata all'inizio di doGet e doPost.
+ * Restituisce null se la richiesta puo' proseguire, oppure una
+ * risposta gia' pronta (esito del login, o rifiuto) da ritornare
+ * subito senza toccare i dati.
+ */
+function _verificaAccesso(e) {
+  const req = _datiRichiesta(e);
 
+  if (req.action === 'login') return _login(req.pin);
 
-function _conAutenticazione(e, gestoreOriginale) {
-  const richiesta = _leggiRichiesta(e);
+  if (_tokenValido(req.token)) return null;
 
-  if (richiesta.action === 'login') {
-    return _login(richiesta.pin);
-  }
-
-  if (!_tokenValido(richiesta.token)) {
-    return _rispostaJson({
-      nonAutorizzato: true,
-      error: 'Non autorizzato: effettua il login.'
-    });
-  }
-
-  return gestoreOriginale(e);
+  return _rispostaAuth({
+    nonAutorizzato: true,
+    error: 'Non autorizzato: effettua il login.'
+  });
 }
 
 
-/** Unisce i parametri in query string e l'eventuale corpo JSON del POST. */
-function _leggiRichiesta(e) {
-  const richiesta = {};
+/** Unisce i parametri della query string e il corpo JSON del POST. */
+function _datiRichiesta(e) {
+  const dati = {};
+  if (!e) return dati;
 
-  if (e && e.parameter) {
-    for (const chiave in e.parameter) richiesta[chiave] = e.parameter[chiave];
+  if (e.parameter) {
+    for (const k in e.parameter) dati[k] = e.parameter[k];
   }
 
-  if (e && e.postData && e.postData.contents) {
+  if (e.postData && e.postData.contents) {
     try {
       const corpo = JSON.parse(e.postData.contents);
-      for (const chiave in corpo) richiesta[chiave] = corpo[chiave];
+      for (const k in corpo) dati[k] = corpo[k];
     } catch (err) {
-      // corpo non JSON: restano solo i parametri in query string
+      // corpo non JSON: restano i parametri della query string
     }
   }
 
-  return richiesta;
+  return dati;
 }
 
 
+/** Verifica la password e apre una sessione. */
 function _login(passwordInviata) {
   const cache = CacheService.getScriptCache();
 
   const tentativi = Number(cache.get('tentativi_falliti') || 0);
   if (tentativi >= MAX_TENTATIVI_FALLITI) {
-    return _rispostaJson({
+    return _rispostaAuth({
       ok: false,
       error: 'Troppi tentativi falliti. Riprova tra qualche minuto.'
     });
   }
 
-  if (!_confrontoSicuro(String(passwordInviata || ''), PASSWORD)) {
+  if (!_confrontoSicuro(String(passwordInviata || ''), PASSWORD_ACCESSO)) {
     cache.put('tentativi_falliti', String(tentativi + 1), BLOCCO_SECONDI);
-    return _rispostaJson({ ok: false, error: 'Password errata.' });
+    return _rispostaAuth({ ok: false, error: 'Password errata.' });
   }
 
   cache.remove('tentativi_falliti');
@@ -106,7 +100,7 @@ function _login(passwordInviata) {
   const token = Utilities.getUuid() + Utilities.getUuid();
   cache.put('sessione_' + token, 'valida', DURATA_SESSIONE_SECONDI);
 
-  return _rispostaJson({ ok: true, token: token });
+  return _rispostaAuth({ ok: true, token: token });
 }
 
 
@@ -117,20 +111,20 @@ function _tokenValido(token) {
 
 
 /**
- * Confronto a tempo costante: scorre sempre tutti i caratteri, cosi' la
- * durata della risposta non lascia capire quanti ne erano corretti.
+ * Confronto a tempo costante: scorre sempre tutti i caratteri, cosi'
+ * la durata della risposta non lascia intuire quanti erano corretti.
  */
 function _confrontoSicuro(a, b) {
   if (a.length !== b.length) return false;
-  let differenza = 0;
+  let diff = 0;
   for (let i = 0; i < a.length; i++) {
-    differenza |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   }
-  return differenza === 0;
+  return diff === 0;
 }
 
 
-function _rispostaJson(oggetto) {
+function _rispostaAuth(oggetto) {
   return ContentService
     .createTextOutput(JSON.stringify(oggetto))
     .setMimeType(ContentService.MimeType.JSON);

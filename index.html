@@ -930,10 +930,11 @@
 // ============================================================
 // CONFIG
 // ============================================================
-// ATTENZIONE: l'URL qui sotto va sostituito con quello della NUOVA
-// distribuzione Apps Script. Il vecchio URL e' compromesso (e' rimasto
-// pubblico in questo repo) e va dismesso, non riutilizzato.
-const APPS_SCRIPT_URL = 'INCOLLA_QUI_IL_NUOVO_URL_APPS_SCRIPT';
+// L'URL della web app non e' un segreto: adesso il backend chiede una
+// password e un token di sessione, quindi conoscerlo non basta piu' per
+// leggere niente. Il segreto e' la password, che sta solo nell'Apps
+// Script (file autenticazione.gs) e non deve mai finire qui dentro.
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-bffTfisPWIqHYY3sOn0BAxzF_2nhlAYz-Y_j2L8NnOOCijy9EOb4Vfa7trKnCr3V/exec';
 
 // Nessuna password e' piu' scritta in questo file: la verifica avviene
 // sul server. Qui teniamo solo il token di sessione che il backend

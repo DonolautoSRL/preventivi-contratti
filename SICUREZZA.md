@@ -1,4 +1,4 @@
-# Messa in sicurezza — cosa è successo e cosa fare
+# Messa in sicurezza — cosa è successo e cosa è stato fatto
 
 ## Il problema
 
@@ -25,73 +25,82 @@ Verificato il 24/08/2026 interrogando l'endpoint senza alcuna autenticazione:
 Dati anagrafici e fiscali di 30 clienti esposti pubblicamente: è una violazione
 di dati personali ai sensi del GDPR.
 
-## Cosa è già stato corretto in questo repository
+## Cosa è stato corretto
+
+### Frontend (`index.html`)
 
 - Rimossa la password dal codice.
 - Il login ora interroga il server: la pagina non decide più da sola.
-- Ogni chiamata al backend porta con sé un token di sessione, aggiunto
+- Ogni chiamata al backend porta un token di sessione, aggiunto
   automaticamente da un'unica intercettazione delle `fetch()` — così nessuna
-  delle ~16 chiamate può restare scoperta per dimenticanza.
+  delle ~16 chiamate può restare scoperta per dimenticanza, comprese quelle
+  che verranno aggiunte in futuro.
 - Se il server risponde "non autorizzato", la sessione si chiude da sola.
 - Il campo password accettava al massimo 6 caratteri: ora ne accetta 128.
-- Aggiunto `BACKEND-autenticazione.gs`, la guardia da installare lato server.
 
-**L'URL dell'Apps Script è stato sostituito da un segnaposto.** Finché non
-completi i passaggi qui sotto, il gestionale non funziona. È voluto: meglio
-fermo che aperto a chiunque.
+### Backend (Apps Script "Donolauto – Preventivi Backend")
 
-## Cosa devi fare tu (io non ho accesso al tuo account Google)
+Aggiunto il file `autenticazione.gs`, che rifiuta ogni richiesta priva di un
+token di sessione valido. Il token si ottiene solo con la password, che vive
+**esclusivamente** nell'Apps Script e non compare in questo repository.
 
-### 1. Chiudi la falla, subito
+In `Codice.gs` è stata aggiunta **una riga** all'inizio di `doGet` e di
+`doPost`, e nient'altro:
 
-Apps Script → **Distribuzioni** → quella attuale → **Archivia**.
-Da questo momento i dati non sono più raggiungibili.
+```js
+const _bloccato = _verificaAccesso(e); if (_bloccato) return _bloccato;
+```
 
-### 2. Installa la guardia
+Poiché tutte le azioni passano da quei due punti d'ingresso, la protezione
+copre l'intera API — incluse `eliminaDoc`, `eliminaFattura` e `inviaEmail` —
+senza toccare nessuna delle altre 19 funzioni.
 
-Segui le istruzioni in testa a `BACKEND-autenticazione.gs`. In sintesi:
-rinomina `doGet`/`doPost` in `gestisciGet`/`gestisciPost`, incolla il file,
-imposta una password lunga e casuale.
+`BACKEND-autenticazione.gs` in questo repository è la copia di riferimento di
+quel file, con la password sostituita da un segnaposto.
 
-### 3. Ridistribuisci con un URL nuovo
+### Perché l'URL è rimasto lo stesso
 
-**Nuova distribuzione** (non "gestisci": serve un URL diverso, perché il
-vecchio è ormai pubblico e resta per sempre nella cronologia git).
-Copia il nuovo URL in `index.html`, al posto di `INCOLLA_QUI_IL_NUOVO_URL_APPS_SCRIPT`.
+L'URL di una web app Apps Script non è una credenziale: è l'indirizzo di
+un'API. Finché l'API non chiedeva niente, conoscerlo bastava per leggere
+tutto — ma adesso che chiede password e token, conoscerlo non serve più a
+nulla. Rigenerarlo avrebbe solo costretto a riconfigurare il frontend senza
+aggiungere sicurezza reale.
 
-### 4. Chiudi i PDF su Google Drive
+Il segreto vero — la password — non è mai passato da GitHub.
 
-La cartella dei contratti è su "chiunque abbia il link". Portala su
-**"Con limitazioni"**. I link già circolati smettono di funzionare.
+## Cosa resta da fare
 
-### 5. Valuta se rendere privati i repository — ma leggi prima
+### Chiudere i PDF su Google Drive
 
-Non farlo d'impulso: **su piano gratuito GitHub Pages non funziona da
-repository privati.** Rendere privati questi cinque significa mandare offline
-tutte e cinque le applicazioni, comprese le quattro che oggi girano bene.
+La cartella dei contratti è condivisa come "chiunque abbia il link", e i 30
+link erano stati distribuiti da un'API aperta. Vanno portati su
+**"Con limitazioni"**: finché restano così, i PDF sono scaricabili da chi si
+sia salvato un link, indipendentemente dall'autenticazione appena aggiunta.
 
-E soprattutto: renderli privati **non annulla** l'esposizione già avvenuta.
-Password e URL sono nella cronologia git e possono essere già stati copiati.
-La falla si chiude ai punti 1-3, non qui.
+### Cambiare la password
 
-Detto questo, il codice non ha motivo di stare in pubblico. Le due strade
-sensate sono passare a un piano a pagamento (Pages resta attivo anche da
-repository privati), oppure lasciarli pubblici assicurandosi che non
-contengano più nulla di segreto — che è la condizione in cui li ha portati
-questa correzione.
+La password attuale è stata generata durante la sessione di correzione ed è
+transitata da una chat. Funziona, ma conviene sostituirla: si modifica in
+`autenticazione.gs` e si rifà **Esegui il deployment > Gestisci deployment >
+matita > Versione: Nuova versione**.
 
-### 6. Valuta la notifica al Garante
+### Controllare con chi sono condivisi gli Apps Script
+
+Sette progetti risultano condivisi con altre persone. Chi ha accesso in
+modifica a uno script ne legge il codice, quindi anche la password. Vale la
+pena verificare l'elenco e togliere chi non serve.
+
+### Valutare la notifica al Garante
 
 L'esposizione ha riguardato dati identificativi e fiscali di persone fisiche.
-Vale la pena sentire un consulente privacy: la valutazione non è tecnica e
-non posso farla io.
+La valutazione non è tecnica: sentire un consulente privacy.
 
 ## Gli altri repository
 
 | Repository | Stato |
 |---|---|
-| `preventivi-contratti` | 🔴 era aperto — corretto qui |
-| `prenota-tagliando` | 🟢 password verificata dal server, corretto |
+| `preventivi-contratti` | 🟢 corretto (era aperto) |
+| `prenota-tagliando` | 🟢 password verificata dal server |
 | `ritiro-auto` | 🟢 stesso schema corretto |
 | `tracker-consegne` | 🟡 nessuna autenticazione, ma l'URL non è pubblicato |
 | `preparazione-veicoli` | 🟡 come sopra |
@@ -99,9 +108,13 @@ non posso farla io.
 I due in giallo non sono esposti oggi, perché l'URL dell'Apps Script non
 compare nel codice: lo inserisci tu al primo avvio e resta nel browser. Però
 non hanno una seconda linea di difesa — chi ottiene l'URL ha accesso completo,
-comprese le cancellazioni.
+comprese le cancellazioni. `BACKEND-autenticazione.gs` è riutilizzabile su
+entrambi quando vuoi affrontarli.
 
-Non li ho modificati di mia iniziativa: non hanno una schermata di login, e
-aggiungerne una cambia il funzionamento di due strumenti che oggi girano.
-`BACKEND-autenticazione.gs` è riutilizzabile su entrambi quando vuoi
-affrontarli — la stessa guardia, con un token per app.
+## Sui repository pubblici
+
+Non c'è più niente di segreto in questo repository, quindi lasciarlo pubblico
+non è più un problema di sicurezza. Renderlo privato è possibile, ma su piano
+gratuito **GitHub Pages non funziona da repository privati**: le applicazioni
+andrebbero offline. E non annullerebbe comunque l'esposizione passata — la
+vecchia password è nella cronologia git e va considerata bruciata.
